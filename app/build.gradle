@@ -1,0 +1,31 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.2"
+
+    defaultConfig {
+        applicationId "jp.ogapee.onscripter"
+        minSdkVersion 16
+        targetSdkVersion 16
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+    externalNativeBuild {
+        ndkBuild {
+            path 'src/main/jni/Android.mk'
+        }
+    }
+}
+
+def supportVersion = '25.3.1'
+dependencies {
+    compile project(':libraries:market_licensing')
+    compile "com.android.support:support-core-utils:$supportVersion"
+    compile 'com.squareup.okhttp3:okhttp:3.8.0'
+}
