@@ -3,7 +3,6 @@
  *  ScriptParser.h - Define block parser of ONScripter
  *
  *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
- *            (C) 2014 jh10001 <jh10001@live.cn>
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -68,7 +67,7 @@ public:
     void setCurrentLabel( const char *label );
     void gosubReal( const char *label, char *next_script, bool textgosub_flag=false );
 
-    SDL_RWops *fopen(const char *path, const char *mode, bool use_save_dir = false);
+    FILE *fopen(const char *path, const char *mode, bool use_save_dir=false);
     void saveGlovalData();
 
     /* Command */
@@ -108,7 +107,6 @@ public:
     int nextCommand();
     int mulCommand();
     int movCommand();
-    int mode_wave_demoCommand();
     int mode_sayaCommand();
     int mode_extCommand();
     int modCommand();
@@ -244,7 +242,6 @@ protected:
     bool windowback_flag;
     bool usewheel_flag;
     bool useescspc_flag;
-	bool mode_wave_demo_flag;
     bool mode_saya_flag;
     bool mode_ext_flag;
     bool force_button_shortcut_flag;

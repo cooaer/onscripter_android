@@ -3,7 +3,6 @@
  *  BaseReader.h - Base class of archive reader
  *
  *  Copyright (c) 2001-2014 Ogapee. All rights reserved.
- *            (C) 2014 jh10001 <jh10001@live.cn>
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -25,8 +24,7 @@
 #ifndef __BASE_READER_H__
 #define __BASE_READER_H__
 
-#include <stddef.h>
-#include "SDL_rwops.h"
+#include <stdio.h>
 
 #ifndef SEEK_END
 #define SEEK_END 2
@@ -74,7 +72,7 @@ struct BaseReader
 
     struct ArchiveInfo{
         ArchiveInfo *next;
-        SDL_RWops *file_handle;
+        FILE *file_handle;
         int power_resume_number; // currently only for PSP
         char *file_name;
         FileInfo *fi_list;
@@ -90,7 +88,7 @@ struct BaseReader
             num_of_files = 0;
         }
         ~ArchiveInfo(){
-            if (file_handle) file_handle->close(file_handle);
+            if (file_handle) fclose( file_handle );
             if (file_name)   delete[] file_name;
             if (fi_list)     delete[] fi_list;
         }
@@ -105,7 +103,7 @@ struct BaseReader
     virtual int  getNumFiles() = 0;
     virtual void registerCompressionType( const char *ext, int type ) = 0;
 
-    //virtual FileInfo getFileByIndex( unsigned int index ) = 0;
+    virtual FileInfo getFileByIndex( unsigned int index ) = 0;
     virtual size_t getFileLength( const char *file_name ) = 0;
     virtual size_t getFile( const char *file_name, unsigned char *buffer, int *location=NULL ) = 0;
 };

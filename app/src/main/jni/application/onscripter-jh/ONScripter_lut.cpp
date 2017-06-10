@@ -2,8 +2,7 @@
  * 
  *  ONScripter_lut.cpp - command lookup-table for ONScripter
  *
- *  Copyright (c) 2001-2015 Ogapee. All rights reserved.
- *            (C) 2014-2015 jh10001 <jh10001@live.cn>
+ *  Copyright (c) 2001-2014 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -174,7 +173,6 @@ static ONScripter::FuncLUT func_lut[] = {
     {"mov10",			&ONScripter::movCommand},
     {"mov",				&ONScripter::movCommand},
     {"monocro",			&ONScripter::monocroCommand},
-    {"mode_wave_demo",	&ONScripter::mode_wave_demoCommand},
     {"mode_saya",		&ONScripter::mode_sayaCommand},
     {"mode_ext",		&ONScripter::mode_extCommand},
     {"mod",				&ONScripter::modCommand},
@@ -283,7 +281,6 @@ static ONScripter::FuncLUT func_lut[] = {
     {"for",				&ONScripter::forCommand},
     {"filelog",			&ONScripter::filelogCommand},
     {"fileexist",		&ONScripter::fileexistCommand},
-//	{"flushout",        &ONScripter::flushoutCommand},
 
     {"existspbtn",		&ONScripter::spbtnCommand},
     {"exec_dll",		&ONScripter::exec_dllCommand},
@@ -366,7 +363,7 @@ static ONScripter::FuncLUT func_lut[] = {
     {"bgcopy",			&ONScripter::bgcopyCommand},
     {"bg",				&ONScripter::bgCommand},
     {"bexec",			&ONScripter::btnwaitCommand},
-    {"bdown",			&ONScripter::bdownCommand},
+    {"bdown",			&ONScripter::btndownCommand},
     {"bdef",			&ONScripter::exbtnCommand},
     {"bcursor",			&ONScripter::getcursorCommand},
     {"bclear",			&ONScripter::btndefCommand},

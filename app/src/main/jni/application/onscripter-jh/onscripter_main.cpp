@@ -3,7 +3,6 @@
  *  onscripter_main.cpp -- main function of ONScripter
  *
  *  Copyright (c) 2001-2014 Ogapee. All rights reserved.
- *            (C) 2014 jh10001 <jh10001@live.cn>
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -23,13 +22,9 @@
  */
 
 #include "ONScripter.h"
-#include "Utils.h"
-#include "gbk2utf16.h"
-#include "sjis2utf16.h"
 #include "version.h"
 
 ONScripter ons;
-Coding2UTF16 *coding2utf16 = nullptr;
 
 #if defined(IOS)
 #import <Foundation/NSArray.h>
@@ -38,10 +33,6 @@ Coding2UTF16 *coding2utf16 = nullptr;
 #import "DataDownloader.h"
 #import "ScriptSelector.h"
 #import "MoviePlayer.h"
-#endif
-
-#ifdef WINRT
-#include "ScriptSelector.h"
 #endif
 
 #if defined(PSP)
@@ -103,9 +94,6 @@ void optionHelp()
     printf( "      --render-font-outline\trender the outline of a text instead of casting a shadow\n");
     printf( "      --edit\t\tenable online modification of the volume and variables when 'z' is pressed\n");
     printf( "      --key-exe file\tset a file (*.EXE) that includes a key table\n");
-	printf( "      --enc:sjis\tuse sjis coding script\n");
-	printf( "      --debug:1\tprint debug info\n");
-    printf( "      --fontcache\tcache default font\n");
     printf( "  -h, --help\t\tshow this help and exit\n");
     printf( "  -v, --version\t\tshow the version information and exit\n");
     exit(0);
@@ -114,13 +102,12 @@ void optionHelp()
 void optionVersion()
 {
     printf("Written by Ogapee <ogapee@aqua.dti2.ne.jp>\n\n");
-    printf("Copyright (c) 2001-2014 Ogapee.\n\
-    		          (C) 2014 jh10001");
+    printf("Copyright (c) 2001-2014 Ogapee.\n");
     printf("This is free software; see the source for copying conditions.\n");
     exit(0);
 }
 
-#ifdef ANDROID && !SDL_VERSION_ATLEAST(2,0,0)
+#ifdef ANDROID
 extern "C"
 {
 #include <jni.h>
@@ -156,26 +143,20 @@ extern "C" void playVideoIOS(const char *filename, bool click_flag, bool loop_fl
 }
 #endif
 
-#if (defined(QWS) || defined(ANDROID)) && !SDL_VERSION_ATLEAST(2,0,0)
+#if defined(QWS) || defined(ANDROID)
 int SDL_main( int argc, char **argv )
 #elif defined(PSP)
 extern "C" int main( int argc, char **argv )
 #else
-int main( int argc, char *argv[] )
+int main( int argc, char **argv )
 #endif
 {
-    utils::printInfo("ONScripter-Jh version %s(%d.%02d)\n", ONS_VERSION, NSC_VERSION/100, NSC_VERSION%100 );
+    printf("ONScripter version %s(%d.%02d)\n", ONS_VERSION, NSC_VERSION/100, NSC_VERSION%100 );
 
 #if defined(PSP)
     ons.disableRescale();
     ons.enableButtonShortCut();
     SetupCallbacks();
-#elif defined(WINRT)
-	{
-		ScriptSelector ss;
-		ons.setArchivePath(ss.selectedPath.c_str());
-	}
-	ons.disableRescale();
 #elif defined(WINCE)
     char currentDir[256];
     strcpy(currentDir, argv[0]);
@@ -297,34 +278,16 @@ int main( int argc, char *argv[] )
                 argv++;
                 ons.setKeyEXE(argv[0]);
             }
-			else if (!strcmp(argv[0] + 1, "-enc:sjis")) {
-				if (coding2utf16 == nullptr) coding2utf16 = new SJIS2UTF16();
-			}
-			else if (!strcmp(argv[0] + 1, "-debug:1")) {
-				ons.setDebugLevel(1);
-			}
-            else if (!strcmp(argv[0] + 1, "-fontcache")) {
-                ons.setFontCache();
-            }
 #if defined(ANDROID) 
-#if SDL_VERSION_ATLEAST(2,0,0)
-            else if (!strcmp(argv[0] + 1, "-compatible")){
-				ons.setCompatibilityMode(); 
-            }
-            else if (!strcmp(argv[0] + 1, "-assets-file")){
-                ons.setUppercaseFile(); 
-            }
-#else
             else if ( !strcmp( argv[0]+1, "-open-only" ) ){
                 argc--;
                 argv++;
                 if (ons.openScript()) exit(-1);
                 return 0;
             }
-#endif //SDL_VERSION_ATLEAST(2,0,0)
 #endif
             else{
-                utils::printInfo(" unknown option %s\n", argv[0] );
+                printf(" unknown option %s\n", argv[0] );
             }
         }
         else{
@@ -333,14 +296,13 @@ int main( int argc, char *argv[] )
         argc--;
         argv++;
     }
-
-	if (coding2utf16 == nullptr) coding2utf16 = new GBK2UTF16();
     
     // ----------------------------------------
     // Run ONScripter
+
     if (ons.openScript()) exit(-1);
     if (ons.init()) exit(-1);
     ons.executeLabel();
-	delete coding2utf16;
+    
     exit(0);
 }

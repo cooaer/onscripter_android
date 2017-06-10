@@ -27,9 +27,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "NsaReader.h"
-#include "gbk2utf16.h"
-
-Coding2UTF16 *coding2utf16 = new GBK2UTF16();
 
 extern int scale_ratio_upper;
 extern int scale_ratio_lower;

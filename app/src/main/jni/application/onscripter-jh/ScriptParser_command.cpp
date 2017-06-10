@@ -2,8 +2,7 @@
  *
  *  ScriptParser_command.cpp - Define command executer of ONScripter
  *
- *  Copyright (c) 2001-2015 Ogapee. All rights reserved.
- *            (C) 2014-2015 jh10001 <jh10001@live.cn>
+ *  Copyright (c) 2001-2014 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -23,7 +22,6 @@
  */
 
 #include "ScriptParser.h"
-#include "Utils.h"
 #include <math.h>
 
 #ifndef M_PI
@@ -189,7 +187,7 @@ int ScriptParser::soundpressplginCommand()
     for (int i=0 ; i<12 ; i++)
         if (buf2[i] >= 'A' && buf2[i] <= 'Z') buf2[i] += 'a' - 'A';
     if (strncmp(buf2, "nbzplgin.dll", 12)){
-        utils::printError( " *** plugin %s is not available, ignored. ***\n", buf);
+        fprintf( stderr, " *** plugin %s is not available, ignored. ***\n", buf);
         return RET_CONTINUE;
     }
 
@@ -474,7 +472,7 @@ int ScriptParser::nsaCommand()
     delete script_h.cBR;
     script_h.cBR = new NsaReader( nsa_offset, archive_path, BaseReader::ARCHIVE_TYPE_NSA|BaseReader::ARCHIVE_TYPE_NS2, key_table );
     if ( script_h.cBR->open( nsa_path ) ){
-        utils::printError(" *** failed to open nsa or ns2 archive, ignored.  ***\n");
+        fprintf( stderr, " *** failed to open nsa or ns2 archive, ignored.  ***\n");
     }
 
     return RET_CONTINUE;
@@ -555,15 +553,6 @@ int ScriptParser::movCommand()
         setStr( &script_h.getVariableData(script_h.pushed_variable.var_no).str, buf );
     }
     else errorAndExit( "mov: no variable" );
-    
-    return RET_CONTINUE;
-}
-
-int ScriptParser::mode_wave_demoCommand()
-{
-    if (current_mode != DEFINE_MODE)
-        errorAndExit("mode_wave_demo: not in the define section");
-    mode_wave_demo_flag = true;
     
     return RET_CONTINUE;
 }
@@ -786,6 +775,7 @@ int ScriptParser::labellogCommand()
 int ScriptParser::kidokuskipCommand()
 {
     kidokuskip_flag = true;
+    kidokumode_flag = true;
     script_h.loadKidokuData();
     
     return RET_CONTINUE;
@@ -849,7 +839,7 @@ int ScriptParser::incCommand()
 
 int ScriptParser::ifCommand()
 {
-    //utils::printInfo("ifCommand\n");
+    //printf("ifCommand\n");
     int condition_status = 0; // 0 ... none, 1 ... and, 2 ... or
     bool f = false, condition_flag = false;
     char *op_buf;
@@ -863,20 +853,20 @@ int ScriptParser::ifCommand()
             script_h.readLabel();
             buf = script_h.readStr();
             f = (script_h.findAndAddLog( script_h.log_info[ScriptHandler::FILE_LOG], buf, false ) != NULL);
-            //utils::printInfo("fchk %s(%d) ", tmp_string_buffer, (findAndAddFileLog( tmp_string_buffer, fasle )) );
+            //printf("fchk %s(%d) ", tmp_string_buffer, (findAndAddFileLog( tmp_string_buffer, fasle )) );
         }
         else if (script_h.compareString("lchk")){
             script_h.readLabel();
             buf = script_h.readStr();
             f = (script_h.findAndAddLog( script_h.log_info[ScriptHandler::LABEL_LOG], buf+1, false ) != NULL);
-            //utils::printInfo("lchk %s (%d)\n", buf, f );
+            //printf("lchk %s (%d)\n", buf, f );
         }
         else{
             int no = script_h.readInt();
             if (script_h.current_variable.type & ScriptHandler::VAR_INT ||
                 script_h.current_variable.type & ScriptHandler::VAR_ARRAY){
                 int left_value = no;
-                //utils::printInfo("left (%d) ", left_value );
+                //printf("left (%d) ", left_value );
 
                 op_buf = script_h.getNext();
                 if ( (op_buf[0] == '>' && op_buf[1] == '=') ||
@@ -889,10 +879,10 @@ int ScriptParser::ifCommand()
                           op_buf[0] == '>' ||
                           op_buf[0] == '=' )
                     script_h.setCurrent(op_buf+1);
-                //utils::printInfo("current %c%c ", op_buf[0], op_buf[1] );
+                //printf("current %c%c ", op_buf[0], op_buf[1] );
 
                 int right_value = script_h.readInt();
-                //utils::printInfo("right (%d) ", right_value );
+                //printf("right (%d) ", right_value );
 
                 if      (op_buf[0] == '>' && op_buf[1] == '=') f = (left_value >= right_value);
                 else if (op_buf[0] == '<' && op_buf[1] == '=') f = (left_value <= right_value);
@@ -1389,12 +1379,12 @@ int ScriptParser::arcCommand()
         delete script_h.cBR;
         script_h.cBR = new SarReader( archive_path, key_table );
         if ( script_h.cBR->open( buf2 ) ){
-            utils::printError( " *** failed to open archive %s, ignored.  ***\n", buf2 );
+            fprintf( stderr, " *** failed to open archive %s, ignored.  ***\n", buf2 );
         }
     }
     else if ( strcmp( script_h.cBR->getArchiveName(), "sar" ) == 0 ){
         if ( script_h.cBR->open( buf2 ) ){
-            utils::printError( " *** failed to open archive %s, ignored.  ***\n", buf2 );
+            fprintf( stderr, " *** failed to open archive %s, ignored.  ***\n", buf2 );
         }
     }
     // skip "arc" commands after "ns?" command

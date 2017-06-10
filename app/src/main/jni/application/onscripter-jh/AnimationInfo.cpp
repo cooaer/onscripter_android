@@ -2,8 +2,7 @@
  * 
  *  AnimationInfo.cpp - General image storage class of ONScripter
  *
- *  Copyright (c) 2001-2015 Ogapee. All rights reserved.
- *            (C) 2014-2015 jh10001 <jh10001@live.cn>
+ *  Copyright (c) 2001-2014 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -26,11 +25,6 @@
 #include <math.h>
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
-#endif
-#ifdef USE_OMP_PARALLEL
-#include <omp.h>
-#elif defined (USE_PARALLEL)
-#include "Parallel.h"
 #endif
 
 #if defined(BPP16)
@@ -289,7 +283,7 @@ int AnimationInfo::doClipping( SDL_Rect *dst, SDL_Rect *clip, SDL_Rect *clipped 
         *dst_buffer = *src_buffer;\
     }\
     else if (*alphap != 0){\
-        Uint32 mask2 = (*alphap * alpha) >> 8;\
+        mask2 = (*alphap * alpha) >> 8;\
         Uint32 temp = *dst_buffer & 0xff00ff;\
         Uint32 mask_rb = (((((*src_buffer & 0xff00ff) - temp ) * mask2 ) >> 8 ) + temp ) & 0xff00ff;\
         temp = *dst_buffer & 0x00ff00;\
@@ -321,7 +315,7 @@ int AnimationInfo::doClipping( SDL_Rect *dst, SDL_Rect *clip, SDL_Rect *clipped 
 }
 #else
 #define ADDBLEND_PIXEL(){\
-    Uint32 mask2 = (*alphap * alpha) >> 8;\
+    mask2 = (*alphap * alpha) >> 8;\
     Uint32 mask_rb = (*dst_buffer & RBMASK) +\
                      ((((*src_buffer & RBMASK) * mask2) >> 8) & RBMASK);\
     mask_rb |= ((mask_rb & AMASK) ? RMASK : 0) |\
@@ -351,7 +345,7 @@ int AnimationInfo::doClipping( SDL_Rect *dst, SDL_Rect *clip, SDL_Rect *clipped 
 }
 #else
 #define SUBBLEND_PIXEL(){\
-    Uint32 mask2 = (*alphap * alpha) >> 8;\
+    mask2 = (*alphap * alpha) >> 8;\
     Uint32 mask_r = (*dst_buffer & RMASK) -\
                     ((((*src_buffer & RMASK) * mask2) >> 8) & RMASK);\
     mask_r &= ((mask_r & AMASK) ? 0 : RMASK);\
@@ -385,39 +379,32 @@ void AnimationInfo::blendOnSurface( SDL_Surface *dst_surface, int dst_x, int dst
     
     alpha &= 0xff;
     int pitch = image_surface->pitch / sizeof(ONSBuf);
-
-
-	struct Blender {
-		ONSBuf *const stsrc_buffer, *const stdst_buffer;
-		const int alpha, dst_rect_w, dst_rect_h, pitch, dst_surface_w;
-
-		void operator()(const int i) const {
-			ONSBuf *src_buffer = stsrc_buffer + (pitch)* i;
-			ONSBuf *dst_buffer = stdst_buffer + (dst_surface_w) * i;
+    ONSBuf *src_buffer = (ONSBuf *)image_surface->pixels + pitch * src_rect.y + image_surface->w*current_cell/num_of_cells + src_rect.x;
+    ONSBuf *dst_buffer = (ONSBuf *)dst_surface->pixels   + dst_surface->w * dst_rect.y + dst_rect.x;
 #if defined(BPP16)    
-			unsigned char *alphap = alpha_buf + image_surface->w * src_rect.y + image_surface->w*current_cell / num_of_cells + src_rect.x + image_surface->w;
+    unsigned char *alphap = alpha_buf + image_surface->w * src_rect.y + image_surface->w*current_cell/num_of_cells + src_rect.x;
 #else
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-			unsigned char *alphap = (unsigned char *)src_buffer + 3;
+    unsigned char *alphap = (unsigned char *)src_buffer + 3;
 #else
-			unsigned char *alphap = (unsigned char *)src_buffer;
-#endif //SDL_BYTEORDER == SDL_LIL_ENDIAN
-#endif //defined(BPP16)  
-			for (int j = dst_rect_w; j != 0; j--, src_buffer++, dst_buffer++) {
-				BLEND_PIXEL();
-			}
-		}
-	} blender = { (ONSBuf *)image_surface->pixels + pitch * src_rect.y + image_surface->w * current_cell / num_of_cells + src_rect.x,
-		(ONSBuf *)dst_surface->pixels + dst_surface->w * dst_rect.y + dst_rect.x,
-		alpha,dst_rect.w,dst_rect.h,pitch,dst_surface->w };
-#ifdef USE_PARALLEL
-	parallel::For(0, dst_rect.h, 1, blender, dst_rect.h * dst_rect.w);
+    unsigned char *alphap = (unsigned char *)src_buffer;
+#endif
+#endif
+
+    Uint32 mask2;
+    
+    for (int i=0 ; i<dst_rect.h ; i++){
+        for (int j=dst_rect.w ; j!=0 ; j--, src_buffer++, dst_buffer++){
+            BLEND_PIXEL();
+        }
+        src_buffer += pitch - dst_rect.w;
+#if defined(BPP16)
+        alphap += image_surface->w - dst_rect.w;
 #else
-#if defined (USE_OMP_PARALLEL)
-#pragma omp parallel for
-#endif
-	for (int i = 0; i < dst_rect.h; i++) blender(i);
-#endif
+        alphap += (image_surface->w - dst_rect.w)*4;
+#endif        
+        dst_buffer += dst_surface->w  - dst_rect.w;
+    }
 
     SDL_UnlockSurface( image_surface );
     SDL_UnlockSurface( dst_surface );
@@ -428,6 +415,8 @@ void AnimationInfo::blendOnSurface2( SDL_Surface *dst_surface, int dst_x, int ds
 {
     if ( image_surface == NULL ) return;
     if (scale_x == 0 || scale_y == 0) return;
+    
+    int i, x, y;
 
     // project corner point and calculate bounding box
     int min_xy[2]={bounding_rect.x, bounding_rect.y};
@@ -450,71 +439,59 @@ void AnimationInfo::blendOnSurface2( SDL_Surface *dst_surface, int dst_x, int ds
     SDL_LockSurface( dst_surface );
     SDL_LockSurface( image_surface );
     
+    Uint32 mask2;
+    
     alpha &= 0xff;
     int pitch = image_surface->pitch / sizeof(ONSBuf);
     // set pixel by inverse-projection with raster scan
-	struct Blender {
-		int (*corner_xy)[2], *min_xy, *max_xy;
-		int (*inv_mat)[2];
-		AnimationInfo *thiz;
-		SDL_Surface *dst_surface;
-		int alpha, pitch, dst_x, dst_y;
-		void operator()(const int y) const {
-			// calculate the start and end point for each raster scan
-			int raster_min = min_xy[0], raster_max = max_xy[0];
-			for (int i = 0; i<4; i++) {
-				int i2 = (i + 1) & 3; // = (i+1)%4
-				if (corner_xy[i][1] == corner_xy[i2][1]) continue;
-				int x = (corner_xy[i2][0] - corner_xy[i][0])*(y - corner_xy[i][1]) / (corner_xy[i2][1] - corner_xy[i][1]) + corner_xy[i][0];
-				if (corner_xy[i2][1] - corner_xy[i][1] > 0) {
-					if (raster_min < x) raster_min = x;
-				} else {
-					if (raster_max > x) raster_max = x;
-				}
-			}
+    for (y=min_xy[1] ; y<= max_xy[1] ; y++){
+        // calculate the start and end point for each raster scan
+        int raster_min = min_xy[0], raster_max = max_xy[0];
+        for (i=0 ; i<4 ; i++){
+            int i2 = (i+1)&3; // = (i+1)%4
+            if (corner_xy[i][1] == corner_xy[i2][1]) continue;
+            x = (corner_xy[i2][0] - corner_xy[i][0])*(y-corner_xy[i][1])/(corner_xy[i2][1] - corner_xy[i][1]) + corner_xy[i][0];
+            if (corner_xy[i2][1] - corner_xy[i][1] > 0){
+                if (raster_min < x) raster_min = x;
+            }
+            else{
+                if (raster_max > x) raster_max = x;
+            }
+        }
 
-			if (raster_min < 0)               raster_min = 0;
-			if (raster_max >= dst_surface->w) raster_max = dst_surface->w - 1;
+        if (raster_min < 0)               raster_min = 0;
+        if (raster_max >= dst_surface->w) raster_max = dst_surface->w - 1;
 
-			ONSBuf *dst_buffer = (ONSBuf *)dst_surface->pixels + dst_surface->w * y + raster_min;
+        ONSBuf *dst_buffer = (ONSBuf *)dst_surface->pixels + dst_surface->w * y + raster_min;
 
-			// inverse-projection
-			int x_offset2 = (inv_mat[0][1] * (y - dst_y) >> 9) + thiz->pos.w;
-			int y_offset2 = (inv_mat[1][1] * (y - dst_y) >> 9) + thiz->pos.h;
-			for (int x = raster_min - dst_x; x <= raster_max - dst_x; x++, dst_buffer++) {
-				int x2 = ((inv_mat[0][0] * x >> 9) + x_offset2) >> 1;
-				int y2 = ((inv_mat[1][0] * x >> 9) + y_offset2) >> 1;
+        // inverse-projection
+        int x_offset2 = (inv_mat[0][1] * (y-dst_y) >> 9) + pos.w;
+        int y_offset2 = (inv_mat[1][1] * (y-dst_y) >> 9) + pos.h;
+        for (x=raster_min-dst_x ; x<=raster_max-dst_x ; x++, dst_buffer++){
+            int x2 = ((inv_mat[0][0] * x >> 9) + x_offset2) >> 1;
+            int y2 = ((inv_mat[1][0] * x >> 9) + y_offset2) >> 1;
 
-				if (x2 < 0 || x2 >= thiz->pos.w ||
-					y2 < 0 || y2 >= thiz->pos.h) continue;
+            if (x2 < 0 || x2 >= pos.w ||
+                y2 < 0 || y2 >= pos.h) continue;
 
-				ONSBuf *src_buffer = (ONSBuf *)thiz->image_surface->pixels + pitch * y2 + x2 + thiz->pos.w*thiz->current_cell;
+            ONSBuf *src_buffer = (ONSBuf *)image_surface->pixels + pitch * y2 + x2 + pos.w*current_cell;
 #if defined(BPP16)    
-				unsigned char *alphap = alpha_buf + image_surface->w * y2 + x2 + pos.w*current_cell;
+            unsigned char *alphap = alpha_buf + image_surface->w * y2 + x2 + pos.w*current_cell;
 #else
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-				unsigned char *alphap = (unsigned char *)src_buffer + 3;
+            unsigned char *alphap = (unsigned char *)src_buffer + 3;
 #else
-				unsigned char *alphap = (unsigned char *)src_buffer;
+            unsigned char *alphap = (unsigned char *)src_buffer;
 #endif
 #endif
-				if (thiz->blending_mode == BLEND_NORMAL)
-					BLEND_PIXEL()
-				else if (thiz->blending_mode == BLEND_ADD)
-				ADDBLEND_PIXEL()
-				else
-				SUBBLEND_PIXEL();
-			}
-		}
-	} blender = { corner_xy, min_xy, max_xy, inv_mat, this, dst_surface, alpha, pitch, dst_x, dst_y };
-#ifdef USE_PARALLEL
-	parallel::For(min_xy[1], max_xy[1] + 1, 1, blender, (max_xy[1] - min_xy[1] + 1) * (max_xy[0] + 1 - min_xy[0]));
-#else
-#ifdef USE_OMP_PARALLEL
-#pragma omp parallel for
-#endif
-	for (int y = min_xy[1]; y <= max_xy[1]; y++) blender(y);
-#endif
+            if (blending_mode == BLEND_NORMAL)
+                BLEND_PIXEL()
+            else if (blending_mode == BLEND_ADD)
+                ADDBLEND_PIXEL()
+            else
+                SUBBLEND_PIXEL();
+        }
+    }
     
     // unlock surface
     SDL_UnlockSurface( image_surface );
@@ -715,15 +692,13 @@ SDL_Surface *AnimationInfo::allocSurface( int w, int h, Uint32 texture_format )
     SDL_Surface *surface;
     if (texture_format == SDL_PIXELFORMAT_RGB565)
         surface = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 16, 0xf800, 0x07e0, 0x001f, 0);
-	else if (texture_format == SDL_PIXELFORMAT_ABGR8888)
-		surface = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+    else if (texture_format == SDL_PIXELFORMAT_ABGR8888)
+        surface = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
     else // texture_format == SDL_PIXELFORMAT_ARGB8888
         surface = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
 
-#if !SDL_VERSION_ATLEAST(2,0,0)
     SDL_SetAlpha(surface, 0, SDL_ALPHA_OPAQUE);
-#endif
-#if defined(USE_SDL_RENDERER) || defined(ANDROID)
+#if defined(USE_RENDERER) || defined(ANDROID)
     SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_NONE);
 #endif
 

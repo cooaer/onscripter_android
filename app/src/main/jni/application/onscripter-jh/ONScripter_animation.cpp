@@ -23,7 +23,6 @@
  */
 
 #include "ONScripter.h"
-#include "Utils.h"
 
 #define DEFAULT_CURSOR_WAIT    ":l/3,160,2;cursor0.bmp"
 #define DEFAULT_CURSOR_NEWPAGE ":l/3,160,2;cursor1.bmp"
@@ -50,7 +49,7 @@ int ONScripter::calcDurationToNextAnimation()
 
     if (!textgosub_label &&
          (clickstr_state == CLICK_WAIT || clickstr_state == CLICK_NEWPAGE)){
-        AnimationInfo *anim = nullptr;
+        AnimationInfo *anim = 0;
         if      (clickstr_state == CLICK_WAIT)
             anim = &cursor_info[0];
         else if (clickstr_state == CLICK_NEWPAGE)
@@ -130,7 +129,7 @@ void ONScripter::proceedAnimation()
 
     if (!textgosub_label &&
         (clickstr_state == CLICK_WAIT || clickstr_state == CLICK_NEWPAGE)){
-        AnimationInfo *anim = nullptr;
+        AnimationInfo *anim = 0;
         if (clickstr_state == CLICK_WAIT)
             anim = &cursor_info[0];
         else if (clickstr_state == CLICK_NEWPAGE)
@@ -357,7 +356,7 @@ void ONScripter::parseTaggedString( AnimationInfo *anim )
         buffer++;
         anim->num_of_cells = getNumberFromBuffer( (const char**)&buffer );
         if ( anim->num_of_cells == 0 ){
-            utils::printError("ONScripter::parseTaggedString  The number of cells is 0\n");
+            fprintf( stderr, "ONScripter::parseTaggedString  The number of cells is 0\n");
             return;
         }
 

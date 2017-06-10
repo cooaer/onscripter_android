@@ -2,8 +2,7 @@
  * 
  *  ONScripter_command.cpp - Command executer of ONScripter
  *
- *  Copyright (c) 2001-2015 Ogapee. All rights reserved.
- *            (C) 2014-2015 jh10001 <jh10001@live.cn>
+ *  Copyright (c) 2001-2014 Ogapee. All rights reserved.
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -24,7 +23,6 @@
 
 #include "ONScripter.h"
 #include "version.h"
-#include "Utils.h"
 
 #if defined(MACOSX) && (SDL_COMPILEDVERSION >= 1208)
 #include <CoreFoundation/CoreFoundation.h>
@@ -200,7 +198,7 @@ int ONScripter::trapCommand()
         setStr(&trap_dist, buf+1);
     }
     else{
-        utils::printInfo("trapCommand: [%s] is not supported\n", buf );
+        printf("trapCommand: [%s] is not supported\n", buf );
     }
               
     return RET_CONTINUE;
@@ -580,11 +578,6 @@ int ONScripter::spbtnCommand()
 
     int sprite_no = script_h.readInt();
     int no        = script_h.readInt();
-	if (no < 1 ||
-		sprite_no < 0 ||
-		sprite_no >= MAX_SPRITE_NUM ||
-		sprite_info[sprite_no].image_surface == NULL)
-		return RET_CONTINUE;
 
     if ( cellcheck_flag ){
         if ( sprite_info[ sprite_no ].num_of_cells < 2 ) return RET_CONTINUE;
@@ -792,22 +785,22 @@ int ONScripter::selectCommand()
             // Text part
             SelectLink *slink = new SelectLink();
             setStr( &slink->text, buf );
-            //utils::printInfo("Select text %s\n", slink->text);
+            //printf("Select text %s\n", slink->text);
 
             // Label part
             if (select_mode != SELECT_NUM_MODE){
                 script_h.readStr();
                 setStr( &slink->label, script_h.getStringBuffer()+1 );
-                //utils::printInfo("Select label %s\n", slink->label );
+                //printf("Select label %s\n", slink->label );
             }
             last_select_link->next = slink;
             last_select_link = last_select_link->next;
 
             comma_flag = (script_h.getEndStatus() & ScriptHandler::END_COMMA);
-            //utils::printInfo("2 comma %d %c %x\n", comma_flag, script_h.getCurrent()[0], script_h.getCurrent()[0]);
+            //printf("2 comma %d %c %x\n", comma_flag, script_h.getCurrent()[0], script_h.getCurrent()[0]);
         }
         else if (script_h.getNext()[0] == 0x0a){
-            //utils::printInfo("comma %d\n", comma_flag);
+            //printf("comma %d\n", comma_flag);
             char *buf = script_h.getNext() + 1; // consume eol
             while ( *buf == ' ' || *buf == '\t' ) buf++;
                 
@@ -829,16 +822,16 @@ int ONScripter::selectCommand()
                 
             if (!comma_flag && !comma2_flag){
                 select_label_info.next_script = buf;
-                //utils::printInfo("select: stop at the end of line\n");
+                //printf("select: stop at the end of line\n");
                 break;
             }
 
-            //utils::printInfo("continue\n");
+            //printf("continue\n");
             comma_flag = true;
         }
         else{ // if select ends at the middle of the line
             select_label_info.next_script = script_h.getNext();
-            //utils::printInfo("select: stop at the middle of the line\n");
+            //printf("select: stop at the middle of the line\n");
             break;
         }
     }
@@ -1220,7 +1213,7 @@ int ONScripter::playCommand()
         setStr(&midi_file_name, buf);
         midi_play_loop_flag = loop_flag;
         if (playSound(midi_file_name, SOUND_MIDI, midi_play_loop_flag) != SOUND_MIDI){
-            utils::printError("can't play MIDI file %s\n", midi_file_name);
+            fprintf(stderr, "can't play MIDI file %s\n", midi_file_name);
         }
     }
 
@@ -1333,7 +1326,6 @@ int ONScripter::mp3stopCommand()
         mp3fadeout_duration_internal = mp3fadeout_duration;
         mp3fade_start = SDL_GetTicks();
         timer_bgmfade_id = SDL_AddTimer(20, bgmfadeCallback, 0);
-		setStr(&fadeout_music_file_name, music_file_name);
 
         char *ext = NULL;
         if (music_file_name) ext = strrchr(music_file_name, '.');
@@ -1341,7 +1333,6 @@ int ONScripter::mp3stopCommand()
             // do not wait until fadout is finished when playing ogg
             event_mode = IDLE_EVENT_MODE;
             waitEvent(0);
-			setStr(&music_file_name, NULL); // to ensure not to play music during fadeout
 
             return RET_CONTINUE;
         }
@@ -1458,7 +1449,7 @@ int ONScripter::movieCommand()
 {
     if (script_h.compareString("stop")){
         script_h.readLabel();
-        utils::printError(" [movie stop] is not supported yet!!\n");
+        fprintf(stderr, " [movie stop] is not supported yet!!\n");
         return RET_CONTINUE;
     }
 
@@ -1477,7 +1468,7 @@ int ONScripter::movieCommand()
             script_h.readInt();
             script_h.readInt();
             script_h.readInt();
-            utils::printError(" [movie pos] is not supported yet!!\n");
+            fprintf(stderr, " [movie pos] is not supported yet!!\n");
         }
         else if (script_h.compareString("click")){
             script_h.readLabel();
@@ -1489,7 +1480,7 @@ int ONScripter::movieCommand()
         }
         else if (script_h.compareString("async")){ // not supported yet
             script_h.readLabel();
-            utils::printError(" [movie async] is not supported yet!!\n");
+            fprintf(stderr, " [movie async] is not supported yet!!\n");
         }
         else{
             script_h.readLabel();
@@ -1508,7 +1499,7 @@ int ONScripter::movemousecursorCommand()
     x = x * screen_device_width / screen_width;
     y = y * screen_device_width / screen_width;
 
-    warpMouse(x, y);
+    SDL_WarpMouse(x, y);
     
     return RET_CONTINUE;
 }
@@ -1537,13 +1528,31 @@ int ONScripter::monocroCommand()
 
 int ONScripter::menu_windowCommand()
 {
-	setFullScreen(false);
+    if ( fullscreen_mode ){
+#if !defined(PSP)
+        if ( !SDL_WM_ToggleFullScreen( screen_surface ) ){
+            screen_surface = SDL_SetVideoMode( screen_device_width, screen_device_height, screen_bpp, DEFAULT_VIDEO_SURFACE_FLAG );
+            flushDirect( screen_rect, refreshMode() );
+        }
+#endif
+        fullscreen_mode = false;
+    }
+
     return RET_CONTINUE;
 }
 
 int ONScripter::menu_fullCommand()
 {
-	setFullScreen(true);
+    if ( !fullscreen_mode ){
+#if !defined(PSP)
+        if ( !SDL_WM_ToggleFullScreen( screen_surface ) ){
+            screen_surface = SDL_SetVideoMode( screen_device_width, screen_device_height, screen_bpp, DEFAULT_VIDEO_SURFACE_FLAG|SDL_FULLSCREEN );
+            flushDirect( screen_rect, refreshMode() );
+        }
+#endif
+        fullscreen_mode = true;
+    }
+
     return RET_CONTINUE;
 }
 
@@ -1563,7 +1572,7 @@ int ONScripter::menu_automodeCommand()
 {
     automode_flag = true;
     skip_mode &= ~SKIP_NORMAL;
-    utils::printInfo("menu_automode: change to automode\n");
+    printf("menu_automode: change to automode\n");
     
     return RET_CONTINUE;
 }
@@ -1950,7 +1959,7 @@ int ONScripter::inputCommand()
     const char *buf = script_h.readStr(); // default value
     setStr( &script_h.getVariableData(no).str, buf );
 
-    utils::printInfo( "*** inputCommand(): $%d is set to the default value: %s\n",
+    printf( "*** inputCommand(): $%d is set to the default value: %s\n",
             no, buf );
     script_h.readInt(); // maxlen
     script_h.readInt(); // widechar flag
@@ -2282,22 +2291,22 @@ int ONScripter::getregCommand()
     buf = script_h.readStr();
     strcpy( key, buf );
 
-    utils::printInfo("  reading Registry file for [%s] %s\n", path, key );
+    printf("  reading Registry file for [%s] %s\n", path, key );
         
-    SDL_RWops *fp;
+    FILE *fp;
     if ( ( fp = fopen( registry_file, "r" ) ) == NULL ){
-        utils::printError("Cannot open file [%s]\n", registry_file );
+        fprintf( stderr, "Cannot open file [%s]\n", registry_file );
         return RET_CONTINUE;
     }
 
     char reg_buf[256], reg_buf2[256];
     bool found_flag = false;
-    while( fp->read(fp, reg_buf, 1, 256) && !found_flag ){
+    while( fgets( reg_buf, 256, fp) && !found_flag ){
         if ( reg_buf[0] == '[' ){
             unsigned int c=0;
             while ( reg_buf[c] != ']' && reg_buf[c] != '\0' ) c++;
             if ( !strncmp( reg_buf + 1, path, (c-1>strlen(path))?(c-1):strlen(path) ) ){
-                while( fp->read(fp, reg_buf2, 1, 256) ){
+                while( fgets( reg_buf2, 256, fp) ){
 
                     script_h.pushCurrent( reg_buf2 );
                     buf = script_h.readStr();
@@ -2317,7 +2326,7 @@ int ONScripter::getregCommand()
                     buf = script_h.readStr();
                     setStr( &script_h.getVariableData(no).str, buf );
                     script_h.popCurrent();
-                    utils::printInfo("  $%d = %s\n", no, script_h.getVariableData(no).str );
+                    printf("  $%d = %s\n", no, script_h.getVariableData(no).str );
                     found_flag = true;
                     break;
                 }
@@ -2325,8 +2334,8 @@ int ONScripter::getregCommand()
         }
     }
 
-    if ( !found_flag ) utils::printError("  The key is not found.\n" );
-    fp->close(fp);
+    if ( !found_flag ) fprintf( stderr, "  The key is not found.\n" );
+    fclose(fp);
 
     return RET_CONTINUE;
 }
@@ -2529,28 +2538,6 @@ int ONScripter::gameCommand()
     return RET_CONTINUE;
 }
 
-//TODO:flushoutCommand
-/*int ONScripter::flushoutCommand()
-{
-	//Mion: flushout special effect
-	// not quite the same as NScr's, but looks good
-	// does a "flushout" in 30 stages while fading to white
-	tmp_effect.duration = script_h.readInt();
-	tmp_effect.effect = MAX_EFFECT_NUM + 3;
-
-	dirty_rect.fill(screen_width, screen_height);
-
-	if (setEffect(&tmp_effect, false, false)) return RET_CONTINUE;
-
-	setStr(&bg_info.file_name, "white");
-	createBackground();
-	SDL_BlitSurface(bg_info.image_surface, NULL, effect_dst_surface, NULL);
-	SDL_BlitSurface(accumulation_surface, NULL, effect_src_surface, NULL);
-	while (doEffect(&tmp_effect));
-
-	return RET_CONTINUE;
-}*/
-
 int ONScripter::fileexistCommand()
 {
     script_h.readInt();
@@ -2573,23 +2560,23 @@ int ONScripter::exec_dllCommand()
     }
     dll_name[c] = '\0';
 
-    utils::printInfo("  reading %s for %s\n", dll_file, dll_name );
+    printf("  reading %s for %s\n", dll_file, dll_name );
 
-    SDL_RWops *fp;
+    FILE *fp;
     if ( ( fp = fopen( dll_file, "r" ) ) == NULL ){
-        utils::printError("Cannot open file [%s]\n", dll_file );
+        fprintf( stderr, "Cannot open file [%s]\n", dll_file );
         return RET_CONTINUE;
     }
 
     char dll_buf[256], dll_buf2[256];
     bool found_flag = false;
-    while( fp->read(fp, dll_buf, 1, 256) && !found_flag ){
+    while( fgets( dll_buf, 256, fp) && !found_flag ){
         if ( dll_buf[0] == '[' ){
             c=0;
             while ( dll_buf[c] != ']' && dll_buf[c] != '\0' ) c++;
             if ( !strncmp( dll_buf + 1, dll_name, (c-1>strlen(dll_name))?(c-1):strlen(dll_name) ) ){
                 found_flag = true;
-                while (fp->read(fp, dll_buf2, 1, 256)) {
+                while( fgets( dll_buf2, 256, fp) ){
                     c=0;
                     while ( dll_buf2[c] == ' ' || dll_buf2[c] == '\t' ) c++;
                     if ( !strncmp( &dll_buf2[c], "str", 3 ) ){
@@ -2602,7 +2589,7 @@ int ONScripter::exec_dllCommand()
                         while ( dll_buf2[c2] != '"' && dll_buf2[c2] != '\0' ) c2++;
                         dll_buf2[c2] = '\0';
                         setStr( &getret_str, &dll_buf2[c] );
-                        utils::printInfo("  getret_str = %s\n", getret_str );
+                        printf("  getret_str = %s\n", getret_str );
                     }
                     else if ( !strncmp( &dll_buf2[c], "ret", 3 ) ){
                         c+=3;
@@ -2611,7 +2598,7 @@ int ONScripter::exec_dllCommand()
                         c++;
                         while ( dll_buf2[c] == ' ' || dll_buf2[c] == '\t' ) c++;
                         getret_int = atoi( &dll_buf2[c] );
-                        utils::printInfo("  getret_int = %d\n", getret_int );
+                        printf("  getret_int = %d\n", getret_int );
                     }
                     else if ( dll_buf2[c] == '[' )
                         break;
@@ -2620,8 +2607,8 @@ int ONScripter::exec_dllCommand()
         }
     }
 
-    if ( !found_flag ) utils::printError("  The DLL is not found in %s.\n", dll_file );
-    fp->close( fp );
+    if ( !found_flag ) fprintf( stderr, "  The DLL is not found in %s.\n", dll_file );
+    fclose( fp );
     
     return RET_CONTINUE;
 }
@@ -2650,11 +2637,7 @@ int ONScripter::exbtnCommand()
         sprite_no = script_h.readInt();
         no = script_h.readInt();
 
-		if (no < 1 ||
-			sprite_no < 0 ||
-			sprite_no >= MAX_SPRITE_NUM ||
-			sprite_info[sprite_no].image_surface == NULL ||
-			(cellcheck_flag && sprite_info[sprite_no].num_of_cells < 2) ||
+        if (( cellcheck_flag && sprite_info[ sprite_no ].num_of_cells < 2) ||
             (!cellcheck_flag && sprite_info[ sprite_no ].num_of_cells == 0)){
             script_h.readStr();
             return RET_CONTINUE;
@@ -2895,9 +2878,6 @@ int ONScripter::drawCommand()
 
 int ONScripter::delayCommand()
 {
-	if (skip_mode & SKIP_NORMAL || ctrl_pressed_status)
-		return RET_CONTINUE;
-
     event_mode = WAIT_TIMER_MODE | WAIT_INPUT_MODE;
     waitEvent( script_h.readInt() );
 
@@ -3138,14 +3118,14 @@ int ONScripter::captionCommand()
     size_t len = strlen(buf);
 
     char *buf2 = new char[len*3+1];
-#if defined(MACOSX) && (SDL_COMPILEDVERSION >= 1208) || SDL_VERSION_ATLEAST(2,0,0)
-    DirectReader::convertCodingToUTF8(buf2, buf);
-#elif defined(LINUX) || (defined(_WIN32) && defined(UTF8_CAPTION))
+#if defined(MACOSX) && (SDL_COMPILEDVERSION >= 1208) /* convert sjis to utf-8 */
+    DirectReader::convertFromSJISToUTF8(buf2, buf);
+#elif defined(LINUX) || (defined(WIN32) && defined(UTF8_CAPTION))
 #if defined(UTF8_CAPTION)
-    DirectReader::convertCodingToUTF8(buf2, buf);
+    DirectReader::convertFromSJISToUTF8(buf2, buf);
 #else
     strcpy(buf2, buf);
-    DirectReader::convertCodingToEUC(buf2);
+    DirectReader::convertFromSJISToEUC(buf2);
 #endif
 #else
     strcpy(buf2, buf);
@@ -3155,7 +3135,7 @@ int ONScripter::captionCommand()
     setStr( &wm_icon_string,  buf2 );
     delete[] buf2;
     
-    setCaption( wm_title_string, wm_icon_string );
+    SDL_WM_SetCaption( wm_title_string, wm_icon_string );
 
     return RET_CONTINUE;
 }
@@ -3199,15 +3179,14 @@ int ONScripter::btnwaitCommand()
     while( bl ){
         bl->show_flag = 0;
         if ( bl->button_type == ButtonLink::SPRITE_BUTTON ){
+            sprite_info[ bl->sprite_no ].visible = true;
             if ( bl->exbtn_ctl[0] ){
                 SDL_Rect check_src_rect = bl->image_rect;
                 SDL_Rect check_dst_rect = {0, 0, 0, 0};
                 decodeExbtnControl( bl->exbtn_ctl[0], &check_src_rect, &check_dst_rect );
             }
-			else {
-				sprite_info[bl->sprite_no].visible = true;
-				sprite_info[bl->sprite_no].setCell(0);
-			}
+            else
+                sprite_info[ bl->sprite_no ].setCell(0);
         }
         else if ( bl->button_type == ButtonLink::TMP_SPRITE_BUTTON ){
             bl->show_flag = 1;
@@ -3230,9 +3209,7 @@ int ONScripter::btnwaitCommand()
         (skip_mode & SKIP_NORMAL || 
          (skip_mode & SKIP_TO_EOP && (textgosub_clickstr_state & 0x03) == CLICK_WAIT) || 
          ctrl_pressed_status) ){
-		waitEventSub(0); // for checking keyup event
         current_button_state.button = 0;
-		if (bexec_flag) current_button_state.button = -1;
         if (skip_mode & SKIP_NORMAL || 
             (skip_mode & SKIP_TO_EOP && (textgosub_clickstr_state & 0x03) == CLICK_WAIT))
             sprintf(current_button_state.str, "SKIP");
@@ -3291,7 +3268,7 @@ int ONScripter::btnwaitCommand()
     if (bexec_flag){
         setStr( &script_h.getVariableData(script_h.pushed_variable.var_no).str, current_button_state.str );
         if (bexec_int_flag){
-            if (current_button_state.button >= 0)
+            if (current_button_state.button > 0)
                 script_h.setInt( &script_h.current_variable, current_button_state.button );
             else
                 script_h.setInt( &script_h.current_variable, -1);
@@ -3361,11 +3338,7 @@ int ONScripter::btndefCommand()
             parseTaggedString( &btndef_info );
             btndef_info.trans_mode = AnimationInfo::TRANS_COPY;
             setupAnimationInfo( &btndef_info );
-#if SDL_VERSION_ATLEAST(2,0,0)
-			SDL_SetSurfaceBlendMode(btndef_info.image_surface, SDL_BLENDMODE_NONE);
-#else
             SDL_SetAlpha( btndef_info.image_surface, DEFAULT_BLIT_FLAG, SDL_ALPHA_OPAQUE );
-#endif
         }
     }
     
@@ -3421,9 +3394,6 @@ int ONScripter::btnCommand()
 int ONScripter::bspCommand()
 {
     int no = script_h.readInt();
-	if (no < 0 || no >= MAX_SPRITE_NUM ||
-		sprite_info[no].image_surface == NULL)
-		return RET_CONTINUE;
 
     ButtonLink *bl = new ButtonLink();
     root_button_link.insert( bl );
@@ -3592,13 +3562,6 @@ int ONScripter::bgCommand()
     while (doEffect(el));
 
     return RET_CONTINUE;
-}
-
-int ONScripter::bdownCommand()
-{
-	btndown_flag = true;
-
-	return RET_CONTINUE;
 }
 
 int ONScripter::barclearCommand()

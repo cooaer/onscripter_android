@@ -23,7 +23,6 @@
  */
 
 #include "ONScripter.h"
-#include "Utils.h"
 
 #define DIALOG_W 241
 #define DIALOG_H 167
@@ -49,7 +48,7 @@
 #define MESSAGE_SAVE_CONFIRM "保存在%s%s？"
 #define MESSAGE_LOAD_CONFIRM "读取%s%s？"
 #define MESSAGE_RESET_CONFIRM "返回标题？"
-#define MESSAGE_END_CONFIRM "退出游戏？"
+#define MESSAGE_END_CONFIRM "退出？"
 #define MESSAGE_YES "是"
 #define MESSAGE_NO "否"
 #define MESSAGE_OK "确定"
@@ -114,13 +113,13 @@ void ONScripter::leaveSystemCall( bool restore_flag )
         if ( event_mode & WAIT_BUTTON_MODE ){
             int x = shelter_mouse_state.x * screen_device_width / screen_width;
             int y = shelter_mouse_state.y * screen_device_width / screen_width;
-            warpMouse(x, y);
+            SDL_WarpMouse(x, y);
         }
     }
     dirty_rect.fill( screen_width, screen_height );
     flush( refreshMode() );
 
-    //utils::printInfo("leaveSystemCall %d %d\n",event_mode, clickstr_state);
+    //printf("leaveSystemCall %d %d\n",event_mode, clickstr_state);
 
     refreshMouseOverButton();
 
@@ -242,7 +241,7 @@ void ONScripter::executeSystemAutomode()
 {
     automode_flag = true;
     skip_mode &= ~SKIP_NORMAL;
-    utils::printInfo("systemcall_automode: change to automode\n");
+    printf("systemcall_automode: change to automode\n");
     leaveSystemCall();
 }
 

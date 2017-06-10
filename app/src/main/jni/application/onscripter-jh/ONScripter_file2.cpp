@@ -3,7 +3,6 @@
  *  ONScripter_file2.cpp - FILE I/O of ONScripter
  *
  *  Copyright (c) 2001-2013 Ogapee. All rights reserved.
- *            (C) 2014 jh10001 <jh10001@live.cn>
  *
  *  ogapee@aqua.dti2.ne.jp
  *
@@ -322,11 +321,7 @@ int ONScripter::loadSaveFile2( int file_version )
     if ( btndef_info.image_name && btndef_info.image_name[0] != '\0' ){
         parseTaggedString( &btndef_info );
         setupAnimationInfo( &btndef_info );
-#if SDL_VERSION_ATLEAST(2,0,0)
-		SDL_SetSurfaceBlendMode(btndef_info.image_surface, SDL_BLENDMODE_NONE);
-#else
-    SDL_SetAlpha( btndef_info.image_surface, DEFAULT_BLIT_FLAG, SDL_ALPHA_OPAQUE );
-#endif
+        SDL_SetAlpha( btndef_info.image_surface, DEFAULT_BLIT_FLAG, SDL_ALPHA_OPAQUE );
     }
 
     if ( file_version >= 202 )
@@ -428,7 +423,7 @@ int ONScripter::loadSaveFile2( int file_version )
     i = readInt();
     current_label_info = script_h.getLabelByLine( i );
     current_line = i - current_label_info.start_line;
-    //utils::printInfo("load %d:%d(%d-%d)\n", current_label_info.start_line, current_line, i, current_label_info.start_line);
+    //printf("load %d:%d(%d-%d)\n", current_label_info.start_line, current_line, i, current_label_info.start_line);
     char *buf = script_h.getAddressByLine( i );
     
     j = readInt();
@@ -692,7 +687,7 @@ void ONScripter::saveSaveFile2( bool output_flag )
     
     writeInt( current_label_info.start_line + current_line, output_flag );
     char *buf = script_h.getAddressByLine( current_label_info.start_line + current_line );
-    //utils::printInfo("save %d:%d\n", current_label_info.start_line, current_line);
+    //printf("save %d:%d\n", current_label_info.start_line, current_line);
 
     i = 0;
     if (!script_h.isText()){
