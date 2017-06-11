@@ -4,9 +4,7 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := application
 
-APP_SUBDIR := $(firstword $(patsubst $(LOCAL_PATH)/%, %, $(shell find $(LOCAL_PATH)/onscripter* -type d)))
-
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/$(APP_SUBDIR) \
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/onscripter-jh \
 	$(LOCAL_PATH)/.. \
 	$(LOCAL_PATH)/../sdl/include \
 	$(LOCAL_PATH)/../sdl_mixer \
@@ -28,8 +26,8 @@ LOCAL_CPP_EXTENSION := .cpp
 
 OBJSUFFIX := .o
 EXT_OBJS = LUAHandler.o
-include $(LOCAL_PATH)/$(APP_SUBDIR)/Makefile.onscripter
-LOCAL_SRC_FILES := $(addprefix $(APP_SUBDIR)/,$(patsubst %.o, %.cpp, $(ONSCRIPTER_OBJS)))
+include $(LOCAL_PATH)/onscripter-jh/Makefile.onscripter
+LOCAL_SRC_FILES := $(addprefix onscripter-jh/,$(patsubst %.o, %.cpp, $(ONSCRIPTER_OBJS)))
 
 LOCAL_SHARED_LIBRARIES := sdl sdl_mixer sdl_image sdl_ttf smpeg lua bz2 mad tremor
 
