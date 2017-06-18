@@ -102,7 +102,7 @@ void ONScripter::leaveSystemCall( bool restore_flag )
     display_mode = shelter_display_mode;
 
     if ( restore_flag ){
-        
+
         current_page = cached_page;
         restoreTextBuffer();
         root_button_link.next = shelter_button_link;
@@ -192,6 +192,8 @@ void ONScripter::executeSystemMenu()
     int counter = 1;
     while( link ){
         ButtonLink *button = getSelectableSentence( link->label, &menu_font, false );
+        // char blank[]="";
+        // ButtonLink *button = getSelectableSentence( blank, &menu_font, false );
         root_button_link.insert( button );
         button->no = counter++;
 
@@ -210,14 +212,14 @@ void ONScripter::executeSystemMenu()
 
     if ( current_button_state.button == -1 ){
         if ( menuselectvoice_file_name[MENUSELECTVOICE_CANCEL] )
-            playSound(menuselectvoice_file_name[MENUSELECTVOICE_CANCEL], 
+            playSound(menuselectvoice_file_name[MENUSELECTVOICE_CANCEL],
                       SOUND_CHUNK, false, MIX_WAVE_CHANNEL);
         leaveSystemCall();
         return;
     }
-    
+
     if ( menuselectvoice_file_name[MENUSELECTVOICE_CLICK] )
-        playSound(menuselectvoice_file_name[MENUSELECTVOICE_CLICK], 
+        playSound(menuselectvoice_file_name[MENUSELECTVOICE_CLICK],
                   SOUND_CHUNK, false, MIX_WAVE_CHANNEL);
 
     link = root_rmenu_link.next;
@@ -250,7 +252,7 @@ bool ONScripter::executeSystemReset()
     if ( executeSystemYesNo( SYSTEM_RESET ) ){
         resetCommand();
         leaveSystemCall( false );
-        
+
         return true;
     }
 
@@ -277,7 +279,7 @@ void ONScripter::executeWindowErase()
 
     event_mode = WAIT_TIMER_MODE | WAIT_BUTTON_MODE;
     waitEventSub(-1);
-        
+
     if (windowchip_sprite_no >= 0)
         sprite_info[windowchip_sprite_no].visible = true;
 
@@ -289,7 +291,7 @@ bool ONScripter::executeSystemLoad()
     current_font = &menu_font;
 
     text_info.fill( 0, 0, 0, 0 );
-        
+
     menu_font.num_xy[0] = (strlen(save_item_name)+1)/2+2+13;
     menu_font.num_xy[1] = num_save_file+2;
     menu_font.top_xy[0] = (screen_width * screen_ratio2 / screen_ratio1 - menu_font.num_xy[0] * menu_font.pitch_xy[0]) / 2;
@@ -299,9 +301,9 @@ bool ONScripter::executeSystemLoad()
     drawString( load_menu_name, color, &menu_font, true, accumulation_surface, NULL, &text_info );
     menu_font.newLine();
     menu_font.newLine();
-        
+
     flush( refreshMode() );
-        
+
     bool nofile_flag;
     char *buffer = new char[ strlen( save_item_name ) + 31 + 1 ];
 
@@ -382,7 +384,7 @@ bool ONScripter::executeSystemLoad()
 
     deleteButtonLink();
     leaveSystemCall();
-    
+
     return false;
 }
 
@@ -401,12 +403,12 @@ void ONScripter::executeSystemSave()
     drawString( save_menu_name, color, &menu_font, true, accumulation_surface, NULL, &text_info );
     menu_font.newLine();
     menu_font.newLine();
-        
+
     flush( refreshMode() );
-        
+
     bool nofile_flag;
     char *buffer = new char[ strlen( save_item_name ) + 31 + 1 ];
-    
+
     for ( unsigned int i=1 ; i<=num_save_file ; i++ ){
         SaveFileInfo save_file_info;
         searchSaveFile( save_file_info, i );
@@ -482,8 +484,8 @@ bool ONScripter::executeSystemYesNo( int caller, int file_no )
         strcpy( name, MESSAGE_RESET_CONFIRM );
     else if ( caller ==  SYSTEM_END )
         strcpy( name, MESSAGE_END_CONFIRM );
-        
-        
+
+
     menu_font.num_xy[0] = strlen(name)/2;
     menu_font.num_xy[1] = 3;
     menu_font.top_xy[0] = (screen_width * screen_ratio2 / screen_ratio1 - menu_font.num_xy[0] * menu_font.pitch_xy[0]) / 2;
@@ -493,7 +495,7 @@ bool ONScripter::executeSystemYesNo( int caller, int file_no )
     drawString( name, color, &menu_font, true, accumulation_surface, NULL, &text_info );
 
     flush( refreshMode() );
-        
+
     int offset1 = strlen(name)/5;
     int offset2 = strlen(name)/2 - offset1;
     strcpy( name, MESSAGE_YES );
@@ -507,15 +509,15 @@ bool ONScripter::executeSystemYesNo( int caller, int file_no )
     button = getSelectableSentence( name, &menu_font, false );
     root_button_link.insert( button );
     button->no = 2;
-        
+
     flush( refreshMode() );
-        
+
     refreshMouseOverButton();
 
     event_mode = WAIT_BUTTON_MODE;
     do waitEventSub(-1);
     while (current_button_state.button == 0);
-        
+
     deleteButtonLink();
 
     if ( current_button_state.button == 1 ){ // yes is selected
@@ -535,14 +537,14 @@ bool ONScripter::executeSystemYesNo( int caller, int file_no )
 void ONScripter::setupLookbackButton()
 {
     deleteButtonLink();
-    
+
     /* ---------------------------------------- */
     /* Previous button check */
     if ( (current_page->previous->text_count > 0 ) &&
          current_page != start_page ){
         ButtonLink *button = new ButtonLink();
         root_button_link.insert( button );
-    
+
         button->no = 1;
 
         if ( lookback_sp[0] >= 0 ){
@@ -577,7 +579,7 @@ void ONScripter::setupLookbackButton()
     if ( current_page->next != cached_page ){
         ButtonLink *button = new ButtonLink();
         root_button_link.insert( button );
-    
+
         button->no = 2;
 
         if ( lookback_sp[1] >= 0 ){
@@ -613,7 +615,7 @@ void ONScripter::executeSystemLookback()
 {
     int i;
     uchar3 color;
-    
+
     current_font = &sentence_font;
 
     current_page = current_page->previous;
@@ -643,7 +645,7 @@ void ONScripter::executeSystemLookback()
 
         event_mode = WAIT_BUTTON_MODE;
         waitEventSub(-1);
-    
+
         if ( current_button_state.button == 0 ||
              ( current_page == start_page &&
                current_button_state.button == -2 ) ){
@@ -663,7 +665,7 @@ void ONScripter::executeSystemLookback()
             leaveSystemCall();
             return;
         }
-        
+
         if ( current_button_state.button == 1 ||
              current_button_state.button == -2 ){
             current_page = current_page->previous;
@@ -687,7 +689,7 @@ void ONScripter::buildDialog(bool yesno_flag, const char *mes1, const char *mes2
     rect.w = DIALOG_W-4; rect.h = DIALOG_H-rect.y-2;
     col = 105;
     SDL_FillRect(s, &rect, SDL_MapRGBA(s->format, col, col, col, 0xff));
-    
+
     rect.x++; rect.y++; rect.w-=2; rect.h-=2;
     col = 255;
     SDL_FillRect(s, &rect, SDL_MapRGBA(s->format, col, col, col, 0xff));
@@ -722,7 +724,7 @@ void ONScripter::buildDialog(bool yesno_flag, const char *mes1, const char *mes2
     dialog_info.deleteSurface();
     dialog_info.num_of_cells = 1;
     dialog_info.setImage(s2, texture_format);
-    
+
     dialog_info.pos.x = (screen_width  - dialog_info.pos.w)/2;
     dialog_info.pos.y = (screen_height - dialog_info.pos.h)/2;
 

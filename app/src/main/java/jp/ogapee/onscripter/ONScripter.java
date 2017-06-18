@@ -68,7 +68,7 @@ public class ONScripter extends Activity implements AdapterView.OnItemClickListe
 	};
 
 	// Launcher contributed by katane-san
-	
+
 	private File mCurrentDirectory = null;
 	private File mOldCurrentDirectory = null;
 	private File [] mDirectoryFiles = null;
@@ -119,7 +119,7 @@ public class ONScripter extends Activity implements AdapterView.OnItemClickListe
 		listView.setAdapter(arrayAdapter);
 		listView.setOnItemClickListener(this);
 	}
-    
+
 	private void runLauncher() {
 		boolean intent_flag = false;
 
@@ -142,7 +142,7 @@ public class ONScripter extends Activity implements AdapterView.OnItemClickListe
 				if (mCurrentDirectory.exists() == false)
 					showErrorDialog("Could not find SD card.");
 			}
-		
+
 			listView = new ListView(this);
 
 			LinearLayout layoutH = new LinearLayout(this);
@@ -166,7 +166,7 @@ public class ONScripter extends Activity implements AdapterView.OnItemClickListe
 			setContentView(listView);
 		}
 	}
-	
+
 	public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
 		if (requestCode == 1 && resultCode == RESULT_OK){
 			gCurrentDirectoryPath = null;
@@ -203,7 +203,7 @@ public class ONScripter extends Activity implements AdapterView.OnItemClickListe
 			}
 		}
 	}
-    
+
 	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 		position--; // for header
 
@@ -221,7 +221,7 @@ public class ONScripter extends Activity implements AdapterView.OnItemClickListe
 
 		mDirectoryFiles = mCurrentDirectory.listFiles(new FileFilter() {
 			public boolean accept(File file) {
-				return (file.isFile() && 
+				return (file.isFile() &&
 					(file.getName().equals("0.txt") ||
 					file.getName().equals("00.txt") ||
 					file.getName().equals("nscr_sec.dat") ||
@@ -236,7 +236,7 @@ public class ONScripter extends Activity implements AdapterView.OnItemClickListe
 		else{
 			mDirectoryFiles = mCurrentDirectory.listFiles(new FileFilter() {
 				public boolean accept(File file) {
-					return (file.isFile() && 
+					return (file.isFile() &&
 						(file.getName().equals("default.ttf")));
 				}
 			});
@@ -251,7 +251,7 @@ public class ONScripter extends Activity implements AdapterView.OnItemClickListe
 				});
 				AlertDialog alertDialog = alertDialogBuilder.create();
 				alertDialog.show();
-   
+
 				mCurrentDirectory = mOldCurrentDirectory;
 				setupDirectorySelector();
 			}
@@ -300,7 +300,7 @@ public class ONScripter extends Activity implements AdapterView.OnItemClickListe
 
 			final APKExpansionPolicy aep = new APKExpansionPolicy(this,
 				new AESObfuscator(SALT, this.getPackageName(), deviceId));
-			
+
 			aep.resetPolicy();
 
 			// let's try and get the OBB file from LVL first
@@ -496,7 +496,7 @@ public class ONScripter extends Activity implements AdapterView.OnItemClickListe
 				btn[i].setVisibility(View.INVISIBLE);
 			}
 		}
-        
+
 		btn[0].setText(getResources().getString(R.string.button_lclick));
 		btn[0].setOnClickListener(new OnClickListener(){
 			public void onClick(View v){
@@ -516,8 +516,10 @@ public class ONScripter extends Activity implements AdapterView.OnItemClickListe
 		btn[2].setText(getResources().getString(R.string.button_left));
 		btn[2].setOnClickListener(new OnClickListener(){
 			public void onClick(View v){
-				nativeKey( KeyEvent.KEYCODE_DPAD_LEFT, 1 );
-				nativeKey( KeyEvent.KEYCODE_DPAD_LEFT, 0 );
+//				nativeKey( KeyEvent.KEYCODE_DPAD_LEFT, 1 );
+//				nativeKey( KeyEvent.KEYCODE_DPAD_LEFT, 0 );
+				nativeKey( KeyEvent.KEYCODE_TAB, 1 );
+				nativeKey( KeyEvent.KEYCODE_TAB, 0 );
 			}
 		});
 
@@ -606,7 +608,7 @@ public class ONScripter extends Activity implements AdapterView.OnItemClickListe
 					fade.setDuration(200);
 					layout2.startAnimation(fade);
 				}
-                
+
 				resetLayout();
 				return true;
 			}
@@ -641,7 +643,7 @@ public class ONScripter extends Activity implements AdapterView.OnItemClickListe
 			screen_w = (dh*game_width/game_height) & (~0x01); // to be 2 bytes aligned
 		else
 			screen_h = dw*game_height/game_width;
-        
+
 		for (int i=0 ; i<6 ; i++)
 			btn[i].setAlpha((mButtonAlpha+1)*0.2f);
 
@@ -691,14 +693,14 @@ public class ONScripter extends Activity implements AdapterView.OnItemClickListe
 			else if (Build.VERSION.SDK_INT >= 21){
 				String path = new String(filename);
 				String paths[] = path.split("\\/");
-            
+
 				DocumentFile df = DocumentFile.fromTreeUri(this, ons_uri);
 				for (int i=0 ; i<paths.length-1 ; i++)
 					df = df.findFile(paths[i]);
 
 				DocumentFile df2 = df.findFile(paths[paths.length-1]);
 				if (df2 != null && df2.exists()) df2.delete();
-                
+
 				df2 = df.createFile("application/octet-stream", paths[paths.length-1]);
 				pfd = getContentResolver().openFileDescriptor(df2.getUri(), "w");
 			}
@@ -724,7 +726,7 @@ public class ONScripter extends Activity implements AdapterView.OnItemClickListe
 		// fullscreen mode
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-							WindowManager.LayoutParams.FLAG_FULLSCREEN); 
+							WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 		gCurrentDirectoryPath = Environment.getExternalStorageDirectory() + "/Android/data/" + getApplicationContext().getPackageName();
 		alertDialogBuilder = new AlertDialog.Builder(this);
@@ -744,7 +746,7 @@ public class ONScripter extends Activity implements AdapterView.OnItemClickListe
 	}
 
 	@Override
-	public boolean onTouchEvent(final MotionEvent event) 
+	public boolean onTouchEvent(final MotionEvent event)
 	{
 		// TODO: add multitouch support (added in Android 2.0 SDK)
 		int action = -1;
@@ -756,7 +758,7 @@ public class ONScripter extends Activity implements AdapterView.OnItemClickListe
 			action = 2;
 
         if (gd.onTouchEvent(event)) action = -1;
-        
+
 		if ( action >= 0 )
 			nativeMouse( (int)event.getX()-top_left_x, (int)event.getY()-top_left_y, action );
 
@@ -858,7 +860,7 @@ public class ONScripter extends Activity implements AdapterView.OnItemClickListe
 
 		return true;
 	 }
-	
+
 	@Override
 	public boolean onKeyUp(int keyCode, final KeyEvent event)
 	{
@@ -906,7 +908,7 @@ public class ONScripter extends Activity implements AdapterView.OnItemClickListe
 	}
 
 	@Override
-	protected void onDestroy() 
+	protected void onDestroy()
 	{
 		if( mGLView != null )
 			mGLView.exitApp();
@@ -977,7 +979,7 @@ public class ONScripter extends Activity implements AdapterView.OnItemClickListe
 	private LicenseChecker mChecker = null;
 	private GestureDetector gd;
 	private int button_state = 0;
-    
+
 	static {
 		System.loadLibrary("mad");
 		System.loadLibrary("bz2");

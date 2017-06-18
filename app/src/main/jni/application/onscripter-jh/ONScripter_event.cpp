@@ -1,5 +1,5 @@
 /* -*- C++ -*-
- * 
+ *
  *  ONScripter_event.cpp - Event handler of ONScripter
  *
  *  Copyright (c) 2001-2014 Ogapee. All rights reserved.
@@ -129,7 +129,7 @@ SDLKey transKey(SDLKey key)
 
 SDLKey transJoystickButton(Uint8 button)
 {
-#if defined(PSP)    
+#if defined(PSP)
     SDLKey button_map[] = { SDLK_ESCAPE, /* TRIANGLE */
                             SDLK_RETURN, /* CIRCLE   */
                             SDLK_SPACE,  /* CROSS    */
@@ -145,7 +145,7 @@ SDLKey transJoystickButton(Uint8 button)
                             SDLK_UNKNOWN,/* HOME     */ /* kernel mode only */
                             SDLK_UNKNOWN,/* HOLD     */};
     return button_map[button];
-#elif defined(__PS3__)    
+#elif defined(__PS3__)
     SDLKey button_map[] = {
         SDLK_0,      /* SELECT   */
         SDLK_UNKNOWN,/* L3       */
@@ -228,7 +228,7 @@ SDL_KeyboardEvent transJoystickAxis(SDL_JoyAxisEvent &jaxis)
     else{
         event.keysym.sym = SDLK_UNKNOWN;
     }
-    
+
     return event;
 }
 
@@ -324,10 +324,10 @@ void ONScripter::flushEventSub( SDL_Event &event )
         if ( wave_sample[event.user.code] ){
             Mix_FreeChunk( wave_sample[event.user.code] );
             wave_sample[event.user.code] = NULL;
-            if (event.user.code == MIX_LOOPBGM_CHANNEL0 && 
+            if (event.user.code == MIX_LOOPBGM_CHANNEL0 &&
                 loop_bgm_name[1] &&
                 wave_sample[MIX_LOOPBGM_CHANNEL1])
-                Mix_PlayChannel(MIX_LOOPBGM_CHANNEL1, 
+                Mix_PlayChannel(MIX_LOOPBGM_CHANNEL1,
                                 wave_sample[MIX_LOOPBGM_CHANNEL1], -1);
         }
     }
@@ -400,14 +400,14 @@ extern "C" void waveCallback( int channel )
 
 bool ONScripter::trapHandler()
 {
-    if (event_mode & WAIT_BUTTON_MODE || 
+    if (event_mode & WAIT_BUTTON_MODE ||
         event_mode & WAIT_TEXT_MODE) return false;
 
     if (trap_mode & TRAP_STOP){
         trap_mode |= TRAP_CLICKED;
         return false;
     }
-    
+
     trap_mode = TRAP_NONE;
     stopAnimation( clickstr_state );
     setCurrentLabel( trap_dist );
@@ -440,7 +440,7 @@ bool ONScripter::mouseMoveEvent( SDL_MouseMotionEvent *event )
 bool ONScripter::mousePressEvent( SDL_MouseButtonEvent *event )
 {
     if ( variable_edit_mode ) return false;
-    
+
     if ( automode_flag ){
         automode_flag = false;
         return false;
@@ -476,7 +476,7 @@ bool ONScripter::mousePressEvent( SDL_MouseButtonEvent *event )
             sprintf(current_button_state.str, "LCLICK");
         else
             sprintf(current_button_state.str, "S%d", current_over_button);
-            
+
         if ( event->type == SDL_MOUSEBUTTONDOWN )
             current_button_state.down_flag = true;
     }
@@ -484,7 +484,7 @@ bool ONScripter::mousePressEvent( SDL_MouseButtonEvent *event )
     else if (event->button == SDL_BUTTON_WHEELUP &&
              (bexec_flag ||
               (event_mode & WAIT_TEXT_MODE) ||
-              (usewheel_flag && event_mode & WAIT_BUTTON_MODE) || 
+              (usewheel_flag && event_mode & WAIT_BUTTON_MODE) ||
               system_menu_mode == SYSTEM_LOOKBACK)){
         current_button_state.button = -2;
         sprintf(current_button_state.str, "WHEELUP");
@@ -493,7 +493,7 @@ bool ONScripter::mousePressEvent( SDL_MouseButtonEvent *event )
     else if ( event->button == SDL_BUTTON_WHEELDOWN &&
               (bexec_flag ||
                (enable_wheeldown_advance_flag && event_mode & WAIT_TEXT_MODE) ||
-               (usewheel_flag && event_mode & WAIT_BUTTON_MODE) || 
+               (usewheel_flag && event_mode & WAIT_BUTTON_MODE) ||
                system_menu_mode == SYSTEM_LOOKBACK ) ){
         if (event_mode & WAIT_TEXT_MODE)
             current_button_state.button = 0;
@@ -634,7 +634,7 @@ void ONScripter::variableEditMode( SDL_KeyboardEvent *event )
     }
     else if ( variable_edit_mode >= EDIT_VARIABLE_NUM_MODE ){
         int p=0;
-        
+
         switch( variable_edit_mode ){
 
           case EDIT_VARIABLE_NUM_MODE:
@@ -664,7 +664,7 @@ void ONScripter::shiftCursorOnButton( int diff )
 {
     int num;
     ButtonLink *button = root_button_link.next;
-    for (num=0 ; button ; num++) 
+    for (num=0 ; button ; num++)
         button = button->next;
 
     shortcut_mouse_line += diff;
@@ -672,9 +672,9 @@ void ONScripter::shiftCursorOnButton( int diff )
     else if (shortcut_mouse_line >= num) shortcut_mouse_line = 0;
 
     button = root_button_link.next;
-    for (int i=0 ; i<shortcut_mouse_line ; i++) 
+    for (int i=0 ; i<shortcut_mouse_line ; i++)
         button  = button->next;
-    
+
     if (button){
         int x = button->select_rect.x + button->select_rect.w/2;
         int y = button->select_rect.y + button->select_rect.h/2;
@@ -748,7 +748,7 @@ bool ONScripter::keyPressEvent( SDL_KeyboardEvent *event )
         automode_flag = false;
         return false;
     }
-    
+
     if ( event->type == SDL_KEYUP ){
         if ( variable_edit_mode ){
             variableEditMode( event );
@@ -763,25 +763,25 @@ bool ONScripter::keyPressEvent( SDL_KeyboardEvent *event )
             SDL_WM_SetCaption( wm_edit_string, wm_icon_string );
         }
     }
-    
+
     if (event->type == SDL_KEYUP)
         skip_mode &= ~SKIP_NORMAL;
-    
+
     if ( shift_pressed_status && event->keysym.sym == SDLK_q && current_mode == NORMAL_MODE ){
         endCommand();
     }
 
-    if ( (trap_mode & TRAP_LEFT_CLICK) && 
+    if ( (trap_mode & TRAP_LEFT_CLICK) &&
          (event->keysym.sym == SDLK_RETURN ||
           event->keysym.sym == SDLK_KP_ENTER ||
           event->keysym.sym == SDLK_SPACE ) ){
         if (trapHandler()) return true;
     }
-    else if ( (trap_mode & TRAP_RIGHT_CLICK) && 
+    else if ( (trap_mode & TRAP_RIGHT_CLICK) &&
               (event->keysym.sym == SDLK_ESCAPE) ){
         if (trapHandler()) return true;
     }
-    
+
     if ( event_mode & WAIT_BUTTON_MODE &&
          (((event->type == SDL_KEYUP || btndown_flag) &&
            ((!getenter_flag && event->keysym.sym == SDLK_RETURN) ||
@@ -809,7 +809,7 @@ bool ONScripter::keyPressEvent( SDL_KeyboardEvent *event )
     }
 
     if ( event->type == SDL_KEYDOWN ) return false;
-    
+
     if ( ( event_mode & (WAIT_INPUT_MODE | WAIT_BUTTON_MODE) ) &&
          ( autoclick_time == 0 || (event_mode & WAIT_BUTTON_MODE)) ){
         if ( !useescspc_flag && event->keysym.sym == SDLK_ESCAPE){
@@ -831,7 +831,7 @@ bool ONScripter::keyPressEvent( SDL_KeyboardEvent *event )
         else if (((!getcursor_flag && event->keysym.sym == SDLK_LEFT) ||
                   event->keysym.sym == SDLK_h) &&
                  (event_mode & WAIT_TEXT_MODE ||
-                  (usewheel_flag && !getcursor_flag && event_mode & WAIT_BUTTON_MODE) || 
+                  (usewheel_flag && !getcursor_flag && event_mode & WAIT_BUTTON_MODE) ||
                   system_menu_mode == SYSTEM_LOOKBACK)){
             current_button_state.button = -2;
             if (event_mode & WAIT_TEXT_MODE) system_menu_mode = SYSTEM_LOOKBACK;
@@ -839,7 +839,7 @@ bool ONScripter::keyPressEvent( SDL_KeyboardEvent *event )
         else if (((!getcursor_flag && event->keysym.sym == SDLK_RIGHT) ||
                   event->keysym.sym == SDLK_l) &&
                  ((enable_wheeldown_advance_flag && event_mode & WAIT_TEXT_MODE) ||
-                  (usewheel_flag && event_mode & WAIT_BUTTON_MODE) || 
+                  (usewheel_flag && event_mode & WAIT_BUTTON_MODE) ||
                   system_menu_mode == SYSTEM_LOOKBACK)){
             if (event_mode & WAIT_TEXT_MODE)
                 current_button_state.button = 0;
@@ -875,6 +875,9 @@ bool ONScripter::keyPressEvent( SDL_KeyboardEvent *event )
         else if ( gettab_flag && event->keysym.sym == SDLK_TAB ){
             current_button_state.button  = -20;
         }
+        else if ( event->keysym.sym == SDLK_TAB ){
+            system_menu_mode = SYSTEM_LOAD;
+        }
         else if ( getcursor_flag && event->keysym.sym == SDLK_UP ){
             current_button_state.button  = -40;
             sprintf(current_button_state.str, "UP");
@@ -903,27 +906,27 @@ bool ONScripter::keyPressEvent( SDL_KeyboardEvent *event )
         else if ( getzxc_flag && event->keysym.sym == SDLK_c ){
             current_button_state.button  = -53;
         }
-        else if ( getfunction_flag && 
+        else if ( getfunction_flag &&
                   event->keysym.sym >= SDLK_F1 && event->keysym.sym <= SDLK_F12 ){
             current_button_state.button = -21-(event->keysym.sym - SDLK_F1);
             sprintf(current_button_state.str, "F%d", event->keysym.sym - SDLK_F1+1);
         }
-        else if ( bexec_flag && 
+        else if ( bexec_flag &&
                   event->keysym.sym >= SDLK_0 && event->keysym.sym <= SDLK_9 ){
             current_button_state.button = -1; // dummy
             sprintf(current_button_state.str, "%d", event->keysym.sym - SDLK_0);
         }
-        else if ( bexec_flag && 
+        else if ( bexec_flag &&
                   event->keysym.sym >= SDLK_a && event->keysym.sym <= SDLK_z ){
             current_button_state.button = -1; // dummy
             sprintf(current_button_state.str, "%c", 'A' + event->keysym.sym - SDLK_a);
         }
-        else if ( bexec_flag && 
+        else if ( bexec_flag &&
                   (event->keysym.sym == SDLK_RSHIFT || event->keysym.sym == SDLK_LSHIFT) ){
             current_button_state.button = -1; // dummy
             sprintf(current_button_state.str, "SHIFT");
         }
-        
+
         if ( current_button_state.button != 0 ){
             stopAnimation( clickstr_state );
 
@@ -933,7 +936,7 @@ bool ONScripter::keyPressEvent( SDL_KeyboardEvent *event )
 
     if ( event_mode & WAIT_INPUT_MODE &&
          ( autoclick_time == 0 || (event_mode & WAIT_BUTTON_MODE)) ){
-        if (event->keysym.sym == SDLK_RETURN || 
+        if (event->keysym.sym == SDLK_RETURN ||
             event->keysym.sym == SDLK_KP_ENTER ||
             event->keysym.sym == SDLK_SPACE ){
             if (!(event_mode & WAIT_TEXT_MODE))
@@ -944,7 +947,7 @@ bool ONScripter::keyPressEvent( SDL_KeyboardEvent *event )
             return true;
         }
     }
-    
+
     if ( event_mode & WAIT_INPUT_MODE ){
         if (event->keysym.sym == SDLK_s && !automode_flag ){
             skip_mode |= SKIP_NORMAL;
@@ -1009,13 +1012,13 @@ void ONScripter::timerEvent()
         SDL_PushEvent(&event);
         return;
     }
-    
+
     int duration = 0;
     if (event_mode & WAIT_TIMER_MODE){
         proceedAnimation();
         duration = calcDurationToNextAnimation();
     }
-            
+
     if (duration > 0){
         if (remaining_time > duration){
             remaining_time -= duration;
@@ -1137,7 +1140,7 @@ void ONScripter::runEventLoop()
                 if (ret) return;
             }
             break;
-            
+
           case SDL_MOUSEBUTTONDOWN:
             if ( !btndown_flag ) break;
           case SDL_MOUSEBUTTONUP:
@@ -1150,7 +1153,7 @@ void ONScripter::runEventLoop()
             event.key.keysym.sym = transJoystickButton(event.jbutton.button);
             if(event.key.keysym.sym == SDLK_UNKNOWN)
                 break;
-            
+
           case SDL_KEYDOWN:
             event.key.keysym.sym = transKey(event.key.keysym.sym);
             ret = keyDownEvent( &event.key );
@@ -1164,7 +1167,7 @@ void ONScripter::runEventLoop()
             event.key.keysym.sym = transJoystickButton(event.jbutton.button);
             if(event.key.keysym.sym == SDLK_UNKNOWN)
                 break;
-            
+
           case SDL_KEYUP:
             event.key.keysym.sym = transKey(event.key.keysym.sym);
             keyUpEvent( &event.key );
@@ -1226,15 +1229,15 @@ void ONScripter::runEventLoop()
                 sprintf(current_button_state.str, "TIMEOUT");
             }
 
-            if (event_mode & (WAIT_INPUT_MODE | WAIT_BUTTON_MODE) && 
-                ( clickstr_state == CLICK_WAIT || 
+            if (event_mode & (WAIT_INPUT_MODE | WAIT_BUTTON_MODE) &&
+                ( clickstr_state == CLICK_WAIT ||
                   clickstr_state == CLICK_NEWPAGE ) ){
-                playClickVoice(); 
-                stopAnimation( clickstr_state ); 
+                playClickVoice();
+                stopAnimation( clickstr_state );
             }
 
             return;
-            
+
           case SDL_ACTIVEEVENT:
             if ( !event.active.gain ) break;
 #ifdef ANDROID
@@ -1255,7 +1258,7 @@ void ONScripter::runEventLoop()
           case SDL_QUIT:
             endCommand();
             break;
-            
+
           default:
             break;
         }
