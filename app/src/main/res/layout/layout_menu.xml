@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/show_menu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="菜单" />
+
+        <LinearLayout
+            android:id="@+id/menu_layout"
+            android:layout_width="120dp"
+            android:visibility="gone"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/save"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="save" />
+
+            <Button
+                android:id="@+id/load"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="load" />
+
+            <Button
+                android:id="@+id/lookback"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="lookback" />
+
+            <Button
+                android:id="@+id/skip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="skip" />
+
+            <Button
+                android:id="@+id/windowearse"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="windowerase" />
+
+            <Button
+                android:id="@+id/automode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="automode" />
+
+            <Button
+                android:id="@+id/reset"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="reset" />
+
+            <Button
+                android:id="@+id/end"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="end" />
+
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/sub_menu_layout"
+            android:layout_width="wrap_content"
+            android:visibility="gone"
+            android:layout_height="wrap_content">
+
+            <jp.ogapee.onscripter.FlowLayout
+                android:id="@+id/save_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+
+            <jp.ogapee.onscripter.FlowLayout
+                android:id="@+id/load_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </FrameLayout>
+    </LinearLayout>
+
+
+</ScrollView>
