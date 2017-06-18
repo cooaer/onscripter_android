@@ -877,6 +877,7 @@ bool ONScripter::keyPressEvent( SDL_KeyboardEvent *event )
         }
         else if ( event->keysym.sym == SDLK_TAB ){
             system_menu_mode = SYSTEM_LOAD;
+            return true;
         }
         else if ( getcursor_flag && event->keysym.sym == SDLK_UP ){
             current_button_state.button  = -40;
