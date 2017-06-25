@@ -59,7 +59,7 @@ static SDLKey keymap[KEYCODE_LAST+1];
 
 enum MOUSE_ACTION { MOUSE_DOWN = 0, MOUSE_UP=1, MOUSE_MOVE=2 };
 
-JNIEXPORT void JNICALL 
+JNIEXPORT void JNICALL
 JAVA_EXPORT_NAME(ONScripter_nativeMouse) ( JNIEnv*  env, jobject  thiz, jint x, jint y, jint action )
 {
 	if( action == MOUSE_DOWN || action == MOUSE_UP )
@@ -79,7 +79,7 @@ static SDL_scancode TranslateKey(int scancode)
 }
 
 
-JNIEXPORT void JNICALL 
+JNIEXPORT void JNICALL
 JAVA_EXPORT_NAME(ONScripter_nativeKey) ( JNIEnv*  env, jobject thiz, jint key, jint action )
 {
 	//if( ! processAndroidTrackballKeyDelays(key, action) )
@@ -99,8 +99,28 @@ JAVA_EXPORT_NAME(ONScripter_nativeKey) ( JNIEnv*  env, jobject thiz, jint key, j
 	//__android_log_print(ANDROID_LOG_INFO, "libSDL", "SDL_SendKeyboardKey state %d code %d posted %d, SDL_PollEvent %d", (int)action, TranslateKey(key), posted, ret);
 }
 
+JNIEXPORT void JNICALL
+JAVA_EXPORT_NAME(ONScripter_nativeKeyExtra) ( JNIEnv*  env, jobject thiz, jint key, jint action, jint extra )
+{
+	//if( ! processAndroidTrackballKeyDelays(key, action) )
+    if (action == 2){
+        SDL_Event event;
+        event.type = SDL_QUIT;
+        SDL_PushEvent( &event );
+    }
+    if (action == 3){
+        SDL_Event event;
+        event.type = SDL_ACTIVEEVENT;
+        event.active.gain = 1;
+        event.active.state = SDL_APPACTIVE;
+        SDL_PushEvent( &event );
+    }
+	int posted = SDL_SendKeyboardKeyExtra( action ? SDL_PRESSED : SDL_RELEASED, TranslateKey(key),  extra);
+	//__android_log_print(ANDROID_LOG_INFO, "libSDL", "SDL_SendKeyboardKey state %d code %d posted %d, SDL_PollEvent %d", (int)action, TranslateKey(key), posted, ret);
+}
 
-JNIEXPORT void JNICALL 
+
+JNIEXPORT void JNICALL
 JAVA_EXPORT_NAME(AccelerometerReader_nativeAccelerometer) ( JNIEnv*  env, jobject  thiz, jfloat accX, jfloat accY, jfloat accZ )
 {
 	// TODO: use accelerometer as joystick, make this configurable
@@ -109,7 +129,7 @@ JAVA_EXPORT_NAME(AccelerometerReader_nativeAccelerometer) ( JNIEnv*  env, jobjec
 
 	static float midX = 0, midY = 0, midZ = 0;
 	static int pressLeft = 0, pressRight = 0, pressUp = 0, pressDown = 0, pressR = 0, pressL = 0;
-	
+
 	if( accX < midX - dx )
 	{
 		if( !pressLeft )
@@ -214,7 +234,7 @@ void ANDROID_InitOSKeymap()
 
   keymap[KEYCODE_BACK] = SDL_SCANCODE_ESCAPE;
 
-  // HTC Evo has only two keys - Menu and Back, and all games require Enter. (Also Volume Up/Down, but they are hard to reach) 
+  // HTC Evo has only two keys - Menu and Back, and all games require Enter. (Also Volume Up/Down, but they are hard to reach)
   // TODO: make this configurable
   keymap[KEYCODE_MENU] = SDL_SCANCODE_RETURN; // SDL_SCANCODE_LALT;
 
@@ -326,13 +346,13 @@ static int AndroidTrackballKeyDelays[4] = {0,0,0,0};
 int processAndroidTrackballKeyDelays( int key, int action )
 {
 	return 0;
-	
+
 	//TODO: fix that code
-	
+
 	// Send Directional Pad Up events with a delay, so app wil lthink we're holding the key a bit
 	static const int KeysMapping[4] = {KEYCODE_DPAD_UP, KEYCODE_DPAD_DOWN, KEYCODE_DPAD_LEFT, KEYCODE_DPAD_RIGHT};
 	int idx, idx2;
-	
+
 	if( key < 0 )
 	{
 		for( idx = 0; idx < 4; idx ++ )

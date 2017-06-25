@@ -518,16 +518,18 @@ public class ONScripter extends Activity implements AdapterView.OnItemClickListe
 			public void onClick(View v){
 //				nativeKey( KeyEvent.KEYCODE_DPAD_LEFT, 1 );
 //				nativeKey( KeyEvent.KEYCODE_DPAD_LEFT, 0 );
-				nativeKey( KeyEvent.KEYCODE_TAB, 1 );
-				nativeKey( KeyEvent.KEYCODE_TAB, 0 );
+				nativeKeyExtra( KeyEvent.KEYCODE_TAB, 1 , 6);
+				nativeKeyExtra( KeyEvent.KEYCODE_TAB, 0 , 6);
 			}
 		});
 
 		btn[3].setText(getResources().getString(R.string.button_right));
 		btn[3].setOnClickListener(new OnClickListener(){
 			public void onClick(View v){
-				nativeKey( KeyEvent.KEYCODE_DPAD_RIGHT, 1 );
-				nativeKey( KeyEvent.KEYCODE_DPAD_RIGHT, 0 );
+//				nativeKey( KeyEvent.KEYCODE_DPAD_RIGHT, 1 );
+//				nativeKey( KeyEvent.KEYCODE_DPAD_RIGHT, 0 );
+				nativeKeyExtra( KeyEvent.KEYCODE_TAB, 1 , 106);
+				nativeKeyExtra( KeyEvent.KEYCODE_TAB, 0 , 106);
 			}
 		});
 
@@ -973,6 +975,7 @@ public class ONScripter extends Activity implements AdapterView.OnItemClickListe
 	private native int nativeGetHeight();
 	private native void nativeMouse( int x, int y, int action );
 	private native void nativeKey( int keyCode, int down );
+	private native void nativeKeyExtra( int keyCode, int down, int extra );
 	private jp.ogapee.onscripter.DataDownloader downloader = null;
 	private AlertDialog.Builder alertDialogBuilder = null;
 	private ProgressDialog progDialog = null;

@@ -876,7 +876,16 @@ bool ONScripter::keyPressEvent( SDL_KeyboardEvent *event )
             current_button_state.button  = -20;
         }
         else if ( event->keysym.sym == SDLK_TAB ){
-            system_menu_mode = SYSTEM_LOAD;
+            // system_menu_mode = SYSTEM_LOAD;
+            int flag=event->extra;
+            if (flag>100) {
+                over_file_no=flag-100;
+                system_menu_mode=CUSTOM_LOAD;
+            }
+            else {
+                over_file_no=flag;
+                system_menu_mode=CUSTOM_SAVE;
+            }
             return true;
         }
         else if ( getcursor_flag && event->keysym.sym == SDLK_UP ){

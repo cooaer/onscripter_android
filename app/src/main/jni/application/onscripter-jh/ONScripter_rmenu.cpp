@@ -162,12 +162,43 @@ int ONScripter::executeSystemCall()
           case SYSTEM_END:
             executeSystemEnd();
             break;
+          case CUSTOM_SAVE:
+            saveToDisk(over_file_no);
+            break;
+          case CUSTOM_LOAD:
+            loadFromDisk(over_file_no);
+            return 1;
+            break;
           default:
             leaveSystemCall();
         }
     }
 
     return 0;
+}
+
+void ONScripter::saveToDisk(int file_no) {
+    saveSaveFile( true, file_no );
+    leaveSystemCall();
+}
+void ONScripter::loadFromDisk(int file_no) {
+    system_menu_mode = 0;
+    loadSaveFile( file_no );
+    leaveSystemCall( false );
+    refreshSurface(backup_surface, NULL, REFRESH_NORMAL_MODE);
+    saveon_flag = true;
+    internal_saveon_flag = true;
+    text_on_flag = false;
+    indent_offset = 0;
+    line_enter_status = 0;
+    page_enter_status = 0;
+    string_buffer_offset = 0;
+    break_flag = false;
+
+    flushEvent();
+
+    if (loadgosub_label)
+        gosubReal( loadgosub_label, script_h.getCurrent() );
 }
 
 void ONScripter::executeSystemMenu()

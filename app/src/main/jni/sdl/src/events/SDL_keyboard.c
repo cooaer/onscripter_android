@@ -755,6 +755,139 @@ SDL_SendKeyboardKey(Uint8 state, SDL_scancode scancode)
 }
 
 int
+SDL_SendKeyboardKeyExtra(Uint8 state, SDL_scancode scancode, int extra)
+{
+    SDL_Keyboard *keyboard = &SDL_keyboard;
+    int posted;
+    Uint16 modstate;
+    Uint32 type;
+
+    if (!scancode) {
+        return 0;
+    }
+#if 0
+    printf("The '%s' key has been %s\n", SDL_GetScancodeName(scancode),
+           state == SDL_PRESSED ? "pressed" : "released");
+#endif
+    if (state == SDL_PRESSED) {
+        modstate = keyboard->modstate;
+        switch (scancode) {
+        case SDL_SCANCODE_NUMLOCKCLEAR:
+            keyboard->modstate ^= KMOD_NUM;
+            break;
+        case SDL_SCANCODE_CAPSLOCK:
+            keyboard->modstate ^= KMOD_CAPS;
+            break;
+        case SDL_SCANCODE_LCTRL:
+            keyboard->modstate |= KMOD_LCTRL;
+            break;
+        case SDL_SCANCODE_RCTRL:
+            keyboard->modstate |= KMOD_RCTRL;
+            break;
+        case SDL_SCANCODE_LSHIFT:
+            keyboard->modstate |= KMOD_LSHIFT;
+            break;
+        case SDL_SCANCODE_RSHIFT:
+            keyboard->modstate |= KMOD_RSHIFT;
+            break;
+        case SDL_SCANCODE_LALT:
+            keyboard->modstate |= KMOD_LALT;
+            break;
+        case SDL_SCANCODE_RALT:
+            keyboard->modstate |= KMOD_RALT;
+            break;
+        case SDL_SCANCODE_LGUI:
+            keyboard->modstate |= KMOD_LGUI;
+            break;
+        case SDL_SCANCODE_RGUI:
+            keyboard->modstate |= KMOD_RGUI;
+            break;
+        case SDL_SCANCODE_MODE:
+            keyboard->modstate |= KMOD_MODE;
+            break;
+        default:
+            break;
+        }
+    } else {
+        switch (scancode) {
+        case SDL_SCANCODE_NUMLOCKCLEAR:
+        case SDL_SCANCODE_CAPSLOCK:
+            break;
+        case SDL_SCANCODE_LCTRL:
+            keyboard->modstate &= ~KMOD_LCTRL;
+            break;
+        case SDL_SCANCODE_RCTRL:
+            keyboard->modstate &= ~KMOD_RCTRL;
+            break;
+        case SDL_SCANCODE_LSHIFT:
+            keyboard->modstate &= ~KMOD_LSHIFT;
+            break;
+        case SDL_SCANCODE_RSHIFT:
+            keyboard->modstate &= ~KMOD_RSHIFT;
+            break;
+        case SDL_SCANCODE_LALT:
+            keyboard->modstate &= ~KMOD_LALT;
+            break;
+        case SDL_SCANCODE_RALT:
+            keyboard->modstate &= ~KMOD_RALT;
+            break;
+        case SDL_SCANCODE_LGUI:
+            keyboard->modstate &= ~KMOD_LGUI;
+            break;
+        case SDL_SCANCODE_RGUI:
+            keyboard->modstate &= ~KMOD_RGUI;
+            break;
+        case SDL_SCANCODE_MODE:
+            keyboard->modstate &= ~KMOD_MODE;
+            break;
+        default:
+            break;
+        }
+        modstate = keyboard->modstate;
+    }
+
+    /* Figure out what type of event this is */
+    switch (state) {
+    case SDL_PRESSED:
+        type = SDL_KEYDOWN;
+        break;
+    case SDL_RELEASED:
+        type = SDL_KEYUP;
+        break;
+    default:
+        /* Invalid state -- bail */
+        return 0;
+    }
+
+    /* Drop events that don't change state */
+    if (keyboard->keystate[scancode] == state) {
+#if 0
+        printf("Keyboard event didn't change state - dropped!\n");
+#endif
+        return 0;
+    }
+
+    /* Update internal keyboard state */
+    keyboard->keystate[scancode] = state;
+
+    /* Post the event, if desired */
+    posted = 0;
+    if (SDL_GetEventState(type) == SDL_ENABLE) {
+        SDL_Event event;
+        event.key.type = type;
+        event.key.state = state;
+        event.key.keysym.scancode = scancode;
+        event.key.keysym.sym = keyboard->keymap[scancode];
+        event.key.keysym.mod = modstate;
+        event.key.keysym.unicode = 0;
+        event.key.windowID = keyboard->focus ? keyboard->focus->id : 0;
+        event.key.extra=extra;
+        posted = (SDL_PushEvent(&event) > 0);
+    }
+    return (posted);
+}
+
+int
 SDL_SendKeyboardText(const char *text)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
