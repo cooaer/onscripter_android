@@ -12,11 +12,11 @@ import java.util.List;
 public class FlowLayout
         extends ViewGroup
 {
-
+    
     private boolean mIsFirstNoLeftPadding = false; // 第一个是否有左padding
     private boolean mIsFirstLineNoTopPadding = false; // 第一行是否有top
     private int mFirstLineTopHeight = 0;
-
+    
     /**
      * 存储所有的View
      */
@@ -25,22 +25,22 @@ public class FlowLayout
      * 每一行的高度
      */
     private List<Integer> mLineHeight = new ArrayList<Integer>();
-
+    
     public FlowLayout(Context context, AttributeSet attrs, int defStyle)
     {
         super(context, attrs, defStyle);
     }
-
+    
     public FlowLayout(Context context, AttributeSet attrs)
     {
         this(context, attrs, 0);
     }
-
+    
     public FlowLayout(Context context)
     {
         this(context, null);
     }
-
+    
     /**
      * 这个方法的作用是:
      * 1.测量子View的宽和高
@@ -53,34 +53,39 @@ public class FlowLayout
         int modeWidth = MeasureSpec.getMode(widthMeasureSpec);
         int sizeHeight = MeasureSpec.getSize(heightMeasureSpec);
         int modeHeight = MeasureSpec.getMode(heightMeasureSpec);
-
+        
         // wrap_content
         int width = 0;
         int height = 0;
-
+        
         // 记录每一行的宽度与高度
         int lineWidth = 0;
         int lineHeight = 0;
-
+        
         // 得到内部元素的个数
         int cCount = getChildCount();
-
+        
         for (int i = 0; i < cCount; i++)
         {
             View child = getChildAt(i);
             // 测量子View的宽和高
             measureChild(child, widthMeasureSpec, heightMeasureSpec);
-            // 得到LayoutParams
-            MarginLayoutParams lp = (MarginLayoutParams) child
-                    .getLayoutParams();
-
+            
             // 子View占据的宽度
-            int childWidth = child.getMeasuredWidth() + lp.leftMargin
-                    + lp.rightMargin;
+            int childWidth = child.getMeasuredWidth();
             // 子View占据的高度
-            int childHeight = child.getMeasuredHeight() + lp.topMargin
-                    + lp.bottomMargin;
-
+            int childHeight = child.getMeasuredHeight();
+    
+            LayoutParams lp = child.getLayoutParams();
+            if (lp != null && lp instanceof MarginLayoutParams)
+            {
+                MarginLayoutParams mlp = (MarginLayoutParams) lp;
+                // 子View占据的宽度
+                childWidth += (mlp.leftMargin + mlp.rightMargin);
+                // 子View占据的高度
+                childHeight += (mlp.topMargin + mlp.bottomMargin);
+            }
+            
             // 换行
             if (lineWidth + childWidth > sizeWidth - getPaddingLeft()
                     - getPaddingRight())
@@ -108,20 +113,20 @@ public class FlowLayout
                 height += lineHeight;
             }
         }
-
+        
         int measuredWidth = modeWidth == MeasureSpec.EXACTLY ? sizeWidth : width
                 + getPaddingLeft() + getPaddingRight();
         int measuredHeight = modeHeight == MeasureSpec.EXACTLY ? sizeHeight : height
                 + getPaddingTop() + getPaddingBottom();
-
+        
         setMeasuredDimension(
                 //
                 measuredWidth,
                 measuredHeight//
         );
-
+        
     }
-
+    
     /**
      * 设置子View的位置
      */
@@ -131,26 +136,26 @@ public class FlowLayout
     {
         mAllViews.clear();
         mLineHeight.clear();
-
+        
         // 当前ViewGroup的宽度
         int width = getWidth();
-
+        
         int lineWidth = 0;
         int lineHeight = 0;
-
+        
         List<View> lineViews = new ArrayList<View>();
-
+        
         int cCount = getChildCount();
-
+        
         for (int i = 0; i < cCount; i++)
         {
             View child = getChildAt(i);
             MarginLayoutParams lp = (MarginLayoutParams) child
                     .getLayoutParams();
-
+            
             int childWidth = child.getMeasuredWidth();
             int childHeight = child.getMeasuredHeight();
-
+            
             // 如果需要换行
             if (childWidth + lineWidth + lp.leftMargin + lp.rightMargin > width
                     - getPaddingLeft() - getPaddingRight())
@@ -159,7 +164,7 @@ public class FlowLayout
                 mLineHeight.add(lineHeight);
                 // 记录当前行的Views
                 mAllViews.add(lineViews);
-
+                
                 // 重置我们的行宽和行高
                 lineWidth = 0;
                 lineHeight = childHeight + lp.topMargin + lp.bottomMargin;
@@ -170,26 +175,26 @@ public class FlowLayout
             lineHeight = Math.max(lineHeight, childHeight + lp.topMargin
                     + lp.bottomMargin);
             lineViews.add(child);
-
+            
         }// for end
         // 处理最后一行
         mLineHeight.add(lineHeight);
         mAllViews.add(lineViews);
-
+        
         // 设置子View的位置
-
+        
         int left = getPaddingLeft();
         int top = getPaddingTop();
-
+        
         // 行数
         int lineNum = mAllViews.size();
-
+        
         for (int i = 0; i < lineNum; i++)
         {
             // 当前行的所有的View
             lineViews = mAllViews.get(i);
             lineHeight = mLineHeight.get(i);
-
+            
             for (int j = 0; j < lineViews.size(); j++)
             {
                 View child = lineViews.get(j);
@@ -198,35 +203,35 @@ public class FlowLayout
                 {
                     continue;
                 }
-
+                
                 MarginLayoutParams lp = (MarginLayoutParams) child
                         .getLayoutParams();
-
+                
                 int lc = left + lp.leftMargin;
                 int tc = top + lp.topMargin;
                 //如果第一个不设置左Padding的话
                 if (j == 0 && mIsFirstNoLeftPadding)
                 {
                     lc = left;
-
+                    
                 }
-
-                if (mIsFirstLineNoTopPadding){
+                
+                if (mIsFirstLineNoTopPadding)
+                {
                     if (i == 0)
                     {
                         mFirstLineTopHeight = lp.topMargin;
                     }
                     tc = tc - mFirstLineTopHeight;
                 }
-
-
-
+                
+                
                 int rc = lc + child.getMeasuredWidth();
                 int bc = tc + child.getMeasuredHeight();
-
+                
                 // 为子View进行布局
                 child.layout(lc, tc, rc, bc);
-
+                
                 if (mIsFirstNoLeftPadding && j == 0)
                 {
                     left += child.getMeasuredWidth()
@@ -241,9 +246,9 @@ public class FlowLayout
             left = getPaddingLeft();
             top += lineHeight;
         }
-
+        
     }
-
+    
     /**
      * 设置左边第一个View是否有左Padding
      *
@@ -253,12 +258,12 @@ public class FlowLayout
     {
         this.mIsFirstNoLeftPadding = noLeftPadding;
     }
-
+    
     public void setIsFirstLineNoTopPadding(boolean noTopPadding)
     {
         this.mIsFirstLineNoTopPadding = noTopPadding;
     }
-
+    
     /**
      * 与当前ViewGroup对应的LayoutParams
      */
@@ -267,5 +272,5 @@ public class FlowLayout
     {
         return new MarginLayoutParams(getContext(), attrs);
     }
-
+    
 }

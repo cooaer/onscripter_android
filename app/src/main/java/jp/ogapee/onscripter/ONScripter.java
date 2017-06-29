@@ -1,5 +1,6 @@
 package jp.ogapee.onscripter;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -61,6 +62,8 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Comparator;
+
+import static android.R.attr.id;
 
 public class ONScripter
         extends Activity
@@ -1272,9 +1275,11 @@ public class ONScripter
         showMenuView.setOnClickListener(onClickListener);
         
         menuLayout = root.findViewById(R.id.menu_layout);
-        for(int id : MENU_IDS)
+        for(int i = 0; i < MENU_IDS.length; i ++)
         {
-            menuLayout.findViewById(id).setOnClickListener(onClickMenuListener);
+            View menuItemView = menuLayout.findViewById(MENU_IDS[i]);
+            menuItemView.setOnClickListener(onClickMenuListener);
+            menuItemView.setTag(i);
         }
         menuLayout.findViewById(R.id.save).setOnClickListener(onClickListener);
         menuLayout.findViewById(R.id.load).setOnClickListener(onClickListener);
@@ -1287,19 +1292,19 @@ public class ONScripter
         for(int i = 0; i < subMenuSize; i ++)
         {
             Button button = new Button(this);
-            button.setText("save_" + i);
+            button.setText("save_" + (i + 1));
             button.setTag(i);
             button.setOnClickListener(onClickSubMenuSaveListener);
-            saveLayout.addView(button);
+            saveLayout.addView(button, new ViewGroup.MarginLayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         }
     
         for(int i = 0; i < subMenuSize; i ++)
         {
             Button button = new Button(this);
-            button.setText("load_" + i);
+            button.setText("load_" + ( i + 1));
             button.setTag(i);
             button.setOnClickListener(onClickSubMenuLoadListener);
-            saveLayout.addView(button);
+            loadLayout.addView(button, new ViewGroup.MarginLayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         }
         
         return root;
@@ -1335,11 +1340,11 @@ public class ONScripter
         else
         {
             menuLayout.setVisibility(View.VISIBLE);
-            subMenuLayout.setVisibility(View.VISIBLE);
+            subMenuLayout.setVisibility(View.GONE);
         }
     
-        nativeKey(KeyEvent.KEYCODE_ENTER, 1);
-        nativeKey(KeyEvent.KEYCODE_ENTER, 0);
+        nativeKey(KeyEvent.KEYCODE_BACK, 1);
+        nativeKey(KeyEvent.KEYCODE_BACK, 0);
     }
     
     private void showLoadLayout()
