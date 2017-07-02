@@ -878,7 +878,27 @@ bool ONScripter::keyPressEvent( SDL_KeyboardEvent *event )
         else if ( event->keysym.sym == SDLK_TAB ){
             // system_menu_mode = SYSTEM_LOAD;
             int flag=event->extra;
-            if (flag>100) {
+            if (flag>50&&flag<=100) {
+                if (flag==51) {
+                    system_menu_mode=SYSTEM_SKIP;
+                }
+                else if (flag==52) {
+                    system_menu_mode=SYSTEM_LOOKBACK;
+                }
+                else if (flag==53) {
+                    system_menu_mode=SYSTEM_WINDOWERASE;
+                }
+                else if (flag==54) {
+                    system_menu_mode=SYSTEM_AUTOMODE;
+                }
+                else if (flag==55) {
+                    system_menu_mode=SYSTEM_RESET;
+                }
+                else if (flag==56) {
+                    system_menu_mode=SYSTEM_END;
+                }
+            }
+            else if (flag>100) {
                 over_file_no=flag-100;
                 system_menu_mode=CUSTOM_LOAD;
             }
