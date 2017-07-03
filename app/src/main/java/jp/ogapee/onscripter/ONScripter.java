@@ -1,6 +1,5 @@
 package jp.ogapee.onscripter;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -62,8 +61,6 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Comparator;
-
-import static android.R.attr.id;
 
 public class ONScripter
         extends Activity
@@ -1256,7 +1253,7 @@ public class ONScripter
     }
     
     public static final int[] MENU_IDS = new int[]{R.id.lookback, R.id.skip, R.id.windowearse, R.id.automode, R.id.reset, R.id.end};
-    public static final int[] MENU_EVENTS = new int[]{};
+    public static final int[] MENU_EVENTS = new int[]{52, 51, 53, 54, 55, 56};
     
     
     private View showMenuView;
@@ -1318,7 +1315,7 @@ public class ONScripter
             switch (v.getId())
             {
                 case R.id.show_menu:
-                    showMenu();
+                    toggleMenu();
                     break;
                 case R.id.save:
                     showSaveLayout();
@@ -1330,7 +1327,7 @@ public class ONScripter
         }
     };
     
-    private void showMenu()
+    private void toggleMenu()
     {
         if (menuLayout.getVisibility() == View.VISIBLE)
         {
@@ -1375,13 +1372,23 @@ public class ONScripter
         }
     }
     
+    private void hideMenu()
+    {
+        menuLayout.setVisibility(View.GONE);
+        subMenuLayout.setVisibility(View.GONE);
+    }
+    
     private OnClickListener onClickMenuListener = new OnClickListener()
     {
         @Override
         public void onClick(View v)
         {
-            int index = (Integer)v.getTag();
+            toggleMenu();
             
+            int index = (Integer)v.getTag();
+    
+            nativeKeyExtra(KeyEvent.KEYCODE_TAB, 1, MENU_EVENTS[index]);
+            nativeKeyExtra(KeyEvent.KEYCODE_TAB, 0, MENU_EVENTS[index]);
         }
     };
     
@@ -1395,6 +1402,8 @@ public class ONScripter
     
             nativeKeyExtra(KeyEvent.KEYCODE_TAB, 1, index);
             nativeKeyExtra(KeyEvent.KEYCODE_TAB, 0, index);
+            
+            hideMenu();
         }
     };
     
@@ -1407,6 +1416,8 @@ public class ONScripter
     
             nativeKeyExtra(KeyEvent.KEYCODE_TAB, 1, 100 + index);
             nativeKeyExtra(KeyEvent.KEYCODE_TAB, 0, 100 + index);
+            
+            hideMenu();
         }
     };
     
